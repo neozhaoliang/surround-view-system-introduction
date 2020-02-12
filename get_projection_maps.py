@@ -10,14 +10,20 @@ import os
 from paramsettings import *
 
 
+# ----------------------------------------
+# global parameters
 name = "front"
 image_file = "./yaml/{}.png".format(name)
 camera_file = "./yaml/{}.yaml".format(name)
-output = "./yaml/{}_projmat.yaml".format(name)
-
+output = "./yaml/{}_projMat.yaml".format(name)
+# horizontal and vertical scaling factors
+scale_x = 1.0
+scale_y = 1.0
 W, H = 640, 480
 colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (0, 255, 255)]
 corners = []
+calibDist = 50
+# -----------------------------------------
 
 shapes = {
     "front": frontShape[::-1],
@@ -27,16 +33,16 @@ shapes = {
 }
 
 dstF = np.float32([
-    [shiftWidth, shiftHeight],
-    [totalWidth-shiftWidth, shiftHeight],
-    [shiftWidth, shiftHeight+chessboardSize],
-    [totalWidth-shiftWidth,  shiftHeight+chessboardSize]])
+    [shiftWidth + chessboardSize, shiftHeight],
+    [shiftWidth + chessboardSize + carWidth, shiftHeight],
+    [shiftWidth + chessboardSize, shiftHeight + calibDist],
+    [shiftWidth + chessboardSize + carWidth,  shiftHeight + calibDist]])
 
 dstL = np.float32([
-    [shiftHeight, shiftWidth],
-    [totalHeight-shiftHeight, shiftWidth],
-    [shiftHeight, shiftWidth+chessboardSize],
-    [totalHeight-shiftHeight, shiftWidth+chessboardSize]])
+    [shiftHeight + chessboardSize, shiftWidth],
+    [shiftHeight + chessboardSize + carHeight, shiftWidth],
+    [shiftHeight + chessboardSize, shiftWidth + calibDist],
+    [shiftHeight + chessboardSize + carHeight, shiftWidth + calibDist]])
 
 dsts = {"front": dstF, "back": dstF, "left": dstL, "right": dstL}
 
@@ -50,7 +56,6 @@ def click(event, x, y, flags, param):
 
 
 def draw_image(image):
-
     new_image = image.copy()
     for i, point in enumerate(corners):
         cv2.circle(new_image, point, 6, colors[i % 4], -1)
@@ -63,7 +68,7 @@ def draw_image(image):
         temp = np.zeros_like(image, np.uint8)
         temp[:, :] = [0, 0, 255]
         imB = cv2.bitwise_and(temp, temp, mask=mask)
-        cv2.addWeighted(new_image, 0.5, imB, 0.5, 1.0, new_image)
+        cv2.addWeighted(new_image, 1.0, imB, 0.5, 0.0, new_image)
 
     cv2.imshow("original image", new_image)
 
@@ -71,12 +76,13 @@ def draw_image(image):
 def main():
     image = cv2.imread(image_file)
     with open(camera_file, "r") as f:
-        data = yaml.load(f)
+        data = yaml.load(f, Loader=yaml.SafeLoader)
 
     K = np.array(data["K"])
     D = np.array(data["D"])
     new_K = K.copy()
-    new_K[0, 0] *= 0.6
+    new_K[0, 0] *= scale_x
+    new_K[1, 1] *= scale_y
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(
         K,
         D,
@@ -118,8 +124,8 @@ def main():
     cv2.waitKey(0)
     cv2.imwrite(name + "_proj.png", warped)
     print("saving projection matrix to file ...")
-    with open(output, "w") as f:
-        yaml.dump({"M": M.tolist()}, f)
+    with open(camera_file, "a+") as f:
+        yaml.dump({"M": M.tolist(), "scale": [scale_x, scale_y]}, f)
 
 
 if __name__ == "__main__":
