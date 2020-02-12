@@ -124,7 +124,7 @@ def main():
     cv2.imwrite(name + "_proj.png", warped)
     print("saving projection matrix to file ...")
     with open(camera_file, "a+") as f:
-        yaml.dump({"M": M.tolist(), "scale": [scale_x, scale_y]}, f)
+        yaml.safe_dump({"M": M.tolist(), "scale": [scale_x, scale_y]}, f)
 
 
 if __name__ == "__main__":

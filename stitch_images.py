@@ -212,7 +212,7 @@ def main(save_weights=False):
         }
 
         with open(os.path.join(work_dir, "weights.yaml"), "w") as f:
-            yaml.dump(mats, f)
+            yaml.safe_dump(mats, f)
 
 
 if __name__ == "__main__":

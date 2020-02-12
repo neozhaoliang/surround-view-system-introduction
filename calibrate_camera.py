@@ -144,7 +144,7 @@ def main():
             fname = os.path.join(args.output, "camera" + str(args.input) + ".yaml")
             print(fname)
             with open(fname, "w") as f:
-                yaml.dump(data, f)
+                yaml.safe_dump(data, f)
             print("succesfully saved camera data")
 
             cv2.putText(img, "Success!", (220 , 240), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 2)

@@ -54,7 +54,7 @@ def main():
     undistort_maps = []
     for conf in camera_params:
         with open(conf, "r") as f:
-            data = yaml.load(f)
+            data = yaml.load(f, Loader=yaml.SafeLoader)
 
         proj_mat = np.array(data["M"])
         matrices.append(proj_mat)
