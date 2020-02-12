@@ -15,7 +15,6 @@ Usage:
 """
 import argparse
 import os
-import sys
 import numpy as np
 import yaml
 import cv2
@@ -41,7 +40,6 @@ def main():
     if not os.path.exists(args.output):
         os.mkdir(args.output)
 
-    # 读取输入流
     try:
         source = cv2.VideoCapture(int(args.input))
     except:
@@ -51,7 +49,6 @@ def main():
     source.set(3, W)
     source.set(4, H)
 
-    # 定义网格点
     grid_size = tuple(int(x) for x in args.grid.split("x"))
     grid_points = np.zeros((np.prod(grid_size), 3), np.float32)
     grid_points[:, :2] = np.indices(grid_size).T.reshape(-1, 2)
@@ -83,10 +80,8 @@ def main():
             term = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_COUNT, 30, 0.01)
             cv2.cornerSubPix(gray, corners, (5, 5), (-1, -1), term)
             print("OK")
-            # 将找到的对应点加入列表
             imgpoints.append(corners.reshape(1, -1, 2))
             objpoints.append(grid_points.reshape(1, -1, 3))
-            # 在图像中标注出角点并保存到 debug 目录中
             cv2.drawChessboardCorners(img, grid_size, corners, found)
         text1 = "press c to calibrate"
         text2 = "press q to quit"
@@ -146,7 +141,6 @@ def main():
         if ret:
             print(ret)
             data = {"dim": np.array([W, H]).tolist(), "K": K.tolist(), "D": D.tolist()}
-            # 写入 yaml 文件
             fname = os.path.join(args.output, "camera" + str(args.input) + ".yaml")
             print(fname)
             with open(fname, "w") as f:

@@ -16,6 +16,7 @@ car_image = os.path.join(work_dir, "car.png")
 camera_params = [os.path.join(work_dir, f) for f in ("front.yaml", "back.yaml", "left.yaml", "right.yaml")]
 camera_images = [os.path.join(work_dir, f) for f in ("front.png", "back.png", "left.png", "right.png")]
 
+
 def dline(x, y, x1, y1, x2, y2):
     """Compute a pixel (x, y) to line segment (x1, y1) and (x2, y2).
     """
@@ -212,6 +213,7 @@ def main(save_weights=False):
 
         with open(os.path.join(work_dir, "weights.yaml"), "w") as f:
             yaml.dump(mats, f)
+
 
 if __name__ == "__main__":
     main()

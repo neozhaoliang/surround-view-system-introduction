@@ -3,8 +3,6 @@
 Show all four cameras and their device numbers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-import sys
-import time
 import cv2
 import numpy as np
 import yaml
@@ -66,7 +64,7 @@ def main():
         cv2.imshow("corrected", corrected)
 
         key = cv2.waitKey(1) & 0xFF
-        if  key == ord("q"):
+        if key == ord("q"):
             break
 
     for cap in captures:

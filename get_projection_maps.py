@@ -6,7 +6,6 @@ Manually select points to get the projection map
 import cv2
 import numpy as np
 import yaml
-import os
 from paramsettings import *
 
 
