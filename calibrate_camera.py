@@ -20,9 +20,6 @@ import yaml
 import cv2
 
 
-W, H = 640, 480
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", default=0, help="input video file or camera device")
@@ -86,9 +83,10 @@ def main():
         text1 = "press c to calibrate"
         text2 = "press q to quit"
         text3 = "device: {}".format(args.input)
-        cv2.putText(img, text1, (50, 100), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(img, text2, (50, 150), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
-        cv2.putText(img, text3, (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+        fontscale = 0.6
+        cv2.putText(img, text1, (20, 70), cv2.FONT_HERSHEY_SIMPLEX, fontscale, (255, 200, 0), 2)
+        cv2.putText(img, text2, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, fontscale, (255, 200, 0), 2)
+        cv2.putText(img, text3, (20, 30), cv2.FONT_HERSHEY_SIMPLEX, fontscale, (255, 200, 0), 2)
         cv2.imshow("corners", img)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
