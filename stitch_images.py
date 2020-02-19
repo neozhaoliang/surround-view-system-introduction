@@ -34,15 +34,11 @@ def linelen(line):
     return np.sqrt(dx*dx + dy*dy)
 
 
-def get_weight_matrix(imA, imB, show=False):
+def get_weight_matrix(imA, imB):
     overlap = cv2.bitwise_and(imA, imB)
     gray = cv2.cvtColor(overlap, cv2.COLOR_BGR2GRAY)
     ret, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
-    if show:
-        cv2.imshow("mask", mask)
     mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=2)
-    if show:
-        cv2.imshow("mask_dilated", mask)
     mask_inv = cv2.bitwise_not(mask)
     imA_remain = cv2.bitwise_and(imA, imA, mask=mask_inv)
     grayA = cv2.cvtColor(imA_remain, cv2.COLOR_BGR2GRAY)
@@ -216,4 +212,4 @@ def main(save_weights=False):
 
 
 if __name__ == "__main__":
-    main()
+    main(save_weights=True)
