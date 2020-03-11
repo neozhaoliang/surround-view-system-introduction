@@ -59,7 +59,7 @@ def main():
             frames.append(frame)
 
         for i, frame in enumerate(frames):
-            region[i] = frame
+            region[i][...] = frame
 
         cv2.imshow("corrected", corrected)
 
