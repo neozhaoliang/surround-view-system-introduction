@@ -11,7 +11,7 @@ import yaml
 import os
 import time
 from imutils.video import VideoStream
-from config import *
+from paramsettings import *
 
 
 # -----------------
