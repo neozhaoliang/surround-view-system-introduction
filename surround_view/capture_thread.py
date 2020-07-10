@@ -1,12 +1,16 @@
 import cv2
 from PyQt5.QtCore import qDebug
 
-from base_thread import BaseThread
-from structures import ImageFrame
-from utils import gstreamer_pipeline
+from .base_thread import BaseThread
+from .structures import ImageFrame
+from .utils import gstreamer_pipeline
 
 
 class CaptureThread(BaseThread):
+
+    """
+    Thread for fetching images from cameras.
+    """
 
     def __init__(self,
                  device_id,
@@ -30,7 +34,7 @@ class CaptureThread(BaseThread):
         self.api_preference = api_preference
         self.resolution = resolution
         self.cap = cv2.VideoCapture()
-        # an instance of the MultiBufferManager object,
+        # an instance of the `MultiBufferManager` object,
         # for synchronizing this thread with other cameras.
         self.buffer_manager = None
 
