@@ -8,10 +8,6 @@ from .utils import gstreamer_pipeline
 
 class CaptureThread(BaseThread):
 
-    """
-    Thread for fetching images from cameras.
-    """
-
     def __init__(self,
                  device_id,
                  flip_method=2,
@@ -34,7 +30,7 @@ class CaptureThread(BaseThread):
         self.api_preference = api_preference
         self.resolution = resolution
         self.cap = cv2.VideoCapture()
-        # an instance of the `MultiBufferManager` object,
+        # an instance of the MultiBufferManager object,
         # for synchronizing this thread with other cameras.
         self.buffer_manager = None
 

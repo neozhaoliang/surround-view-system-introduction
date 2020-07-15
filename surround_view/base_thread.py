@@ -9,7 +9,7 @@ class BaseThread(QThread):
 
     """
     Base class for all types of threads (capture, processing, stitching, ...,
-    etc). Mainly for collecting statistics of this thread.
+    etc). Mainly for collecting statistics of the threads.
     """
 
     FPS_STAT_QUEUE_LENGTH = 32

@@ -1,7 +1,6 @@
-from PyQt5.QtCore import QSemaphore, QMutex, QMutexLocker, QWaitCondition
+from PyQt5.QtCore import QSemaphore, QMutex
+from PyQt5.QtCore import QMutexLocker, QWaitCondition
 from queue import Queue
-import numpy as np
-from .param_settings import project_shapes
 
 
 class Buffer(object):
@@ -160,63 +159,3 @@ class MultiBufferManager(object):
                 "sync: {}\n".format(self.do_sync) + \
                 "devices: {}\n".format(tuple(self.buffer_maps.keys())) + \
                 "sync enabled devices: {}".format(self.sync_devices))
-
-
-class ProjectedImageBuffer(object):
-
-    """
-    Class for synchronizing processing threads from different cameras.
-    """
-
-    def __init__(self, drop_if_full=True, buffer_size=8):
-        self.sync_devices = set()
-        self.buffer = Buffer(buffer_size)
-        self.drop_if_full = drop_if_full
-        self.wc = QWaitCondition()
-        self.mutex = QMutex()
-        self.arrived = 0
-        self.current_frames = dict()
-
-    def bind_thread(self, thread):
-        with QMutexLocker(self.mutex):
-            self.sync_devices.add(thread.device_id)
-
-        shape = project_shapes[thread.camera_model.camera_name]
-        self.current_frames[thread.device_id] = np.zeros(shape[::-1] + (3,), np.uint8)
-        thread.proc_buffer_manager = self
-
-    def get(self):
-        return self.buffer.get()
-
-    def set_frame_for_device(self, device_id, frame):
-        if device_id not in self.sync_devices:
-            raise ValueError("Device not held by the buffer: {}".format(device_id))
-        self.current_frames[device_id] = frame
-
-    def sync(self, device_id):
-        # only perform sync if enabled for specified device/stream
-        self.mutex.lock()
-        if device_id in self.sync_devices:
-            # increment arrived count
-            self.arrived += 1
-            # we are the last to arrive: wake all waiting threads
-            if self.arrived == len(self.sync_devices):
-                self.buffer.add(self.current_frames, self.drop_if_full)
-                self.wc.wakeAll()
-            # still waiting for other streams to arrive: wait
-            else:
-                self.wc.wait(self.mutex)
-            # decrement arrived count
-            self.arrived -= 1
-        self.mutex.unlock()
-
-    def wake_all(self):
-        with QMutexLocker(self.mutex):
-            self.wc.wakeAll()
-
-    def __contains__(self, device_id):
-        return device_id in self.sync_devices
-
-    def __str__(self):
-        return (self.__class__.__name__ + ":\n" + \
-                "devices: {}\n".format(self.sync_devices))

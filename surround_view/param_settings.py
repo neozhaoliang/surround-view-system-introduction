@@ -1,3 +1,10 @@
+import os
+import cv2
+
+
+camera_names = ["front", "back", "left", "right"]
+
+# --------------------------------------------------------------------
 # (shift_width, shift_height): how far away the birdview looks outside
 # of the calibration pattern in horizontal and vertical directions
 shift_w = 300
@@ -18,48 +25,39 @@ xl = shift_w + 180 + inn_shift_w
 xr = total_w - xl
 yt = shift_h + 200 + inn_shift_h
 yb = total_h - yt
-
-# ------------------------------------------------------------
-camera_names = ("front", "back", "left", "right")
-
-front_shape = (total_w, yt)
-back_shape = front_shape
-left_shape = (total_h, xl)
-right_shape = left_shape
+# --------------------------------------------------------------------
 
 project_shapes = {
-    "front": front_shape,
-    "back": back_shape,
-    "left": left_shape,
-    "right": right_shape
+    "front": (total_w, yt),
+    "back":  (total_w, yt),
+    "left":  (total_h, xl),
+    "right": (total_h, xl)
 }
 
 # pixel locations of the four points to be choosen.
 # you must click these pixels in the same order when running
-# the get_projection_map.py script.
-front_proj_keypoints = [(shift_w + 120, shift_h),
-                        (shift_w + 480, shift_h),
-                        (shift_w + 120, shift_h + 160),
-                        (shift_w + 480, shift_h + 160)]
+# the get_projection_map.py script
+project_keypoints = {
+    "front": [(shift_w + 120, shift_h),
+              (shift_w + 480, shift_h),
+              (shift_w + 120, shift_h + 160),
+              (shift_w + 480, shift_h + 160)],
 
-back_proj_keypoints = [(shift_w + 120, shift_h),
-                       (shift_w + 480, shift_h),
-                       (shift_w + 120, shift_h + 160),
-                       (shift_w + 480, shift_h + 160)]
+    "back":  [(shift_w + 120, shift_h),
+              (shift_w + 480, shift_h),
+              (shift_w + 120, shift_h + 160),
+              (shift_w + 480, shift_h + 160)],
 
-left_proj_keypoints = [(shift_h + 280, shift_w),
-                       (shift_h + 840, shift_w),
-                       (shift_h + 280, shift_w + 160),
-                       (shift_h + 840, shift_w + 160)]
+    "left":  [(shift_h + 280, shift_w),
+              (shift_h + 840, shift_w),
+              (shift_h + 280, shift_w + 160),
+              (shift_h + 840, shift_w + 160)],
 
-right_proj_keypoints = [(shift_h + 160, shift_w),
-                        (shift_h + 720, shift_w),
-                        (shift_h + 160, shift_w + 160),
-                        (shift_h + 720, shift_w + 160)]
-
-dst_points = {
-    "front": front_proj_keypoints,
-    "back": back_proj_keypoints,
-    "left": left_proj_keypoints,
-    "right": right_proj_keypoints
+    "right": [(shift_h + 160, shift_w),
+              (shift_h + 720, shift_w),
+              (shift_h + 160, shift_w + 160),
+              (shift_h + 720, shift_w + 160)]
 }
+
+car_image = cv2.imread(os.path.join(os.getcwd(), "images", "car.png"))
+car_image = cv2.resize(car_image, (xr - xl, yb - yt))

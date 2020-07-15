@@ -15,7 +15,7 @@ class FisheyeCameraModel(object):
         if not os.path.isfile(camera_param_file):
             raise ValueError("Cannot find camera param file")
 
-        if not camera_name in settings.camera_names:
+        if camera_name not in settings.camera_names:
             raise ValueError("Unknown camera name: {}".format(camera_name))
 
         self.camera_file = camera_param_file
@@ -24,7 +24,7 @@ class FisheyeCameraModel(object):
         self.shift_xy = (0, 0)
         self.undistort_maps = None
         self.project_matrix = None
-        self.project_shape = settings.project_shapes[self.camera_name]
+        self.project_shape = settings.project_shapes[self.camera_name]            
         self.load_camera_params()
 
     def load_camera_params(self):
@@ -69,23 +69,16 @@ class FisheyeCameraModel(object):
     def set_scale_and_shift(self, scale_xy=(1.0, 1.0), shift_xy=(0, 0)):
         self.scale_xy = scale_xy
         self.shift_xy = shift_xy
+        self.update_undistort_maps()
         return self
 
     def undistort(self, image):
-        result = cv2.remap(
-            image,
-            *self.undistort_maps,
-            interpolation=cv2.INTER_LINEAR,
-            borderMode=cv2.BORDER_CONSTANT
-        )
+        result = cv2.remap(image, *self.undistort_maps, interpolation=cv2.INTER_LINEAR,
+                           borderMode=cv2.BORDER_CONSTANT)
         return result
 
     def project(self, image):
-        result = cv2.warpPerspective(
-            image,
-            self.project_matrix,
-            self.project_shape
-        )
+        result = cv2.warpPerspective(image, self.project_matrix, self.project_shape)
         return result
 
     def flip(self, image):
@@ -100,3 +93,13 @@ class FisheyeCameraModel(object):
 
         else:
             return np.flip(cv2.transpose(image), 1)
+
+    def save_data(self):
+        fs = cv2.FileStorage(self.camera_file, cv2.FILE_STORAGE_WRITE)
+        fs.write("camera_matrix", self.camera_matrix)
+        fs.write("dist_coeffs", self.dist_coeffs)
+        fs.write("resolution", self.resolution)
+        fs.write("project_matrix", self.project_matrix)
+        fs.write("scale_xy", np.float32(self.scale_xy))
+        fs.write("shift_xy", np.float32(self.shift_xy))
+        fs.release()
