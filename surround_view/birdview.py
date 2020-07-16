@@ -210,7 +210,10 @@ class BirdView(BaseThread):
     def make_luminance_balance(self):
 
         def tune(x):
-            return x * np.exp((1 - x) * 0.1)
+            if x >= 1:
+                return x * np.exp((1 - x) * 0.4)
+            else:
+                return x * np.exp((1 - x) * 0.6)
 
         front, back, left, right = self.frames
         m1, m2, m3, m4 = self.masks
