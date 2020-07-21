@@ -94,7 +94,7 @@ def get_outmost_polygon_boundary(img):
     return polygon
 
 
-def get_weight_mask_matrix(imA, imB):
+def get_weight_mask_matrix(imA, imB, dist_threshold=5):
     """
     Get the weight matrix G that combines two images imA, imB smoothly.
     """
@@ -112,7 +112,7 @@ def get_weight_mask_matrix(imA, imB):
 
     for y, x in zip(*indices):
         distToB = cv2.pointPolygonTest(polyB, (x, y), True)
-        if distToB < 1:
+        if distToB < dist_threshold:
             distToA = cv2.pointPolygonTest(polyA, (x, y), True)
             distToB *= distToB
             distToA *= distToA
