@@ -211,9 +211,9 @@ class BirdView(BaseThread):
 
         def tune(x):
             if x >= 1:
-                return x * np.exp((1 - x) * 0.4)
+                return x * np.exp((1 - x) * 0.5)
             else:
-                return x * np.exp((1 - x) * 0.6)
+                return x * np.exp((1 - x) * 0.8)
 
         front, back, left, right = self.frames
         m1, m2, m3, m4 = self.masks
