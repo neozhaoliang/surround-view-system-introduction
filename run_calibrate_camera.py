@@ -9,7 +9,7 @@ Usage:
         -grid 9x6 \
         -out fisheye.yaml \
         -framestep 20 \
-        -resolution 640x480
+        --resolution 640x480
         --fisheye
 """
 import argparse
@@ -38,6 +38,9 @@ def main():
     parser.add_argument("-grid", "--grid", default="9x6",
                         help="size of the calibrate grid pattern")
 
+    parser.add_argument("-r", "--resolution", default="640x480",
+                        help="resolution of the camera image")
+
     parser.add_argument("-framestep", type=int, default=20,
                         help="use every nth frame in the video")
 
@@ -64,6 +67,9 @@ def main():
     font = cv2.FONT_HERSHEY_SIMPLEX
     fontscale = 0.6
 
+    resolution_str = args.resolution.split("x")
+    W = int(resolution_str[0])
+    H = int(resolution_str[1])
     grid_size = tuple(int(x) for x in args.grid.split("x"))
     grid_points = np.zeros((1, np.prod(grid_size), 3), np.float32)
     grid_points[0, :, :2] = np.indices(grid_size).T.reshape(-1, 2)
@@ -74,6 +80,7 @@ def main():
     device = args.input
     cap_thread = CaptureThread(device_id=device,
                                flip_method=args.flip,
+                               resolution=(W, H),
                                use_gst=not args.no_gst,
                                )
     buffer_manager = MultiBufferManager()
