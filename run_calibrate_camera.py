@@ -123,8 +123,14 @@ def main():
         cv2.imshow("corners", img)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("c"):
-            do_calib = True
-            break
+            print("\nPerforming calibration...\n")
+            N_OK = len(objpoints)
+            if N_OK < 12:
+                print("Less than 12 corners (%d) detected, calibration failed" %(N_OK))
+                continue
+            else:
+                do_calib = True
+                break
 
         elif key == ord("q"):
             quit = True
@@ -136,12 +142,7 @@ def main():
         cv2.destroyAllWindows()
 
     if do_calib:
-        print("\nPerforming calibration...\n")
         N_OK = len(objpoints)
-        if N_OK < 12:
-            print("Less than 12 corners detected, calibration failed")
-            return
-
         K = np.zeros((3, 3))
         D = np.zeros((4, 1))
         rvecs = [np.zeros((1, 1, 3), dtype=np.float64) for _ in range(N_OK)]
