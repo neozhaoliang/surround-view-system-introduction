@@ -50,6 +50,9 @@ def main():
     parser.add_argument("-flip", "--flip", default=0, type=int,
                         help="flip method of the camera")
 
+    parser.add_argument("--no_gst", action="store_true",
+                        help="set true if not use gstreamer for the camera capture")
+
     args = parser.parse_args()
 
     if not os.path.exists(TARGET_DIR):
@@ -70,7 +73,9 @@ def main():
 
     device = args.input
     cap_thread = CaptureThread(device_id=device,
-                               flip_method=args.flip)
+                               flip_method=args.flip,
+                               use_gst=not args.no_gst,
+                               )
     buffer_manager = MultiBufferManager()
     buffer_manager.bind_thread(cap_thread, buffer_size=8)
     if cap_thread.connect_camera():
