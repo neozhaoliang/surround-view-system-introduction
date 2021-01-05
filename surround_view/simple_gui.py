@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-
+# return -1 if user press 'q'. return 1 if user press 'Enter'.
 def display_image(window_title, image):
     cv2.imshow(window_title, image)
     while True:
@@ -13,6 +13,7 @@ def display_image(window_title, image):
         if key == ord("q"):
             return -1
 
+        # 'Enter' key is detected!
         if key == 13:
             return 1
 
