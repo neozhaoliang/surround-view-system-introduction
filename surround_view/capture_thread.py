@@ -14,6 +14,7 @@ class CaptureThread(BaseThread):
                  drop_if_full=True,
                  api_preference=cv2.CAP_GSTREAMER,
                  resolution=None,
+                 use_gst=True,
                  parent=None):
         """
         device_id: device number of the camera.
@@ -26,6 +27,7 @@ class CaptureThread(BaseThread):
         super(CaptureThread, self).__init__(parent)
         self.device_id = device_id
         self.flip_method = flip_method
+        self.use_gst = use_gst
         self.drop_if_full = drop_if_full
         self.api_preference = api_preference
         self.resolution = resolution
@@ -71,8 +73,11 @@ class CaptureThread(BaseThread):
         qDebug("Stopping capture thread...")
 
     def connect_camera(self):
-        options = gstreamer_pipeline(cam_id=self.device_id, flip_method=self.flip_method)
-        self.cap.open(options, self.api_preference)
+        if self.use_gst:
+            options = gstreamer_pipeline(cam_id=self.device_id, flip_method=self.flip_method)
+            self.cap.open(options, self.api_preference)
+        else:
+            self.cap.open(self.device_id)
         # return false if failed to open camera
         if not self.cap.isOpened():
             qDebug("Cannot open camera {}".format(self.device_id))
