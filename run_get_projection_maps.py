@@ -21,7 +21,7 @@ def get_projection_map(camera_model, image):
         src = np.float32(gui.keypoints)
         dst = np.float32(dst_points)
         camera_model.project_matrix = cv2.getPerspectiveTransform(src, dst)
-        proj_image = camera_model.project(image)
+        proj_image = camera_model.project(und_image)
 
         ret = display_image("Bird's View", proj_image)
         if ret > 0:
