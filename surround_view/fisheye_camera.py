@@ -24,14 +24,14 @@ class FisheyeCameraModel(object):
         self.shift_xy = (0, 0)
         self.undistort_maps = None
         self.project_matrix = None
-        self.project_shape = settings.project_shapes[self.camera_name]            
+        self.project_shape = settings.project_shapes[self.camera_name]
         self.load_camera_params()
 
     def load_camera_params(self):
         fs = cv2.FileStorage(self.camera_file, cv2.FILE_STORAGE_READ)
         self.camera_matrix = fs.getNode("camera_matrix").mat()
         self.dist_coeffs = fs.getNode("dist_coeffs").mat()
-        self.resolution = fs.getNode("resolution").mat()
+        self.resolution = fs.getNode("resolution").mat().flatten()
 
         scale_xy = fs.getNode("scale_xy").mat()
         if scale_xy is not None:
