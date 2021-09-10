@@ -34,7 +34,7 @@ project_shapes = {
     "right": (total_h, xl)
 }
 
-# pixel locations of the four points to be choosen.
+# pixel locations of the four points to be chosen.
 # you must click these pixels in the same order when running
 # the get_projection_map.py script
 project_keypoints = {

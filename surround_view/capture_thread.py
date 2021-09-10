@@ -101,7 +101,7 @@ class CaptureThread(BaseThread):
         return True
 
     def disconnect_camera(self):
-        # disconnect camera if it's already openned.
+        # disconnect camera if it's already opened.
         if self.cap.isOpened():
             self.cap.release()
             return True

@@ -48,7 +48,7 @@ def main():
                         help="path to output yaml file")
 
     parser.add_argument("-fisheye", "--fisheye", action="store_true",
-                        help="set ture if this is a fisheye camera")
+                        help="set true if this is a fisheye camera")
 
     parser.add_argument("-flip", "--flip", default=0, type=int,
                         help="flip method of the camera")
@@ -177,7 +177,7 @@ def main():
             fs.write("camera_matrix", K)
             fs.write("dist_coeffs", D)
             fs.release()
-            print("succesfully saved camera data")
+            print("successfully saved camera data")
             cv2.putText(img, "Success!", (220, 240), font, 2, (0, 0, 255), 2)
 
         else:
