@@ -199,7 +199,7 @@ python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
 
 5. 对不在重叠区域内的像素，若其属于 `front` 相机的范围则其权值为 1，否则权值为 0。于是我们得到了一个连续变化的，取值范围在 0~1 之间的矩阵 $G$，其灰度图如下：
   
-   <img style="margin:0px auto;display:block" width=250 src="./img/weight_for_FL.png"/>
+   <img style="margin:0px auto;display:block" width=250 src="./img/weight_for_FL.png" />
 
    将 $G$ 作为权值可得融合后的图像为 `front * G + (1- G) * left`。
 
