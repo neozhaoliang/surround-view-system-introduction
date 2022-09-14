@@ -1,12 +1,12 @@
 关于车辆的全景环视系统网上已经有很多的资料，然而几乎没有可供参考的代码，这一点对入门的新人来说非常不友好。这个项目的目的就是介绍全景系统的原理，并给出一份基本要素齐全的、可以实际运行的 Python 实现供大家参考。环视全景系统涉及的知识并不复杂，只需要读者了解相机的标定、透视变换，并懂得如何使用 OpenCV。
 
-这个程序最初是在一辆搭载了一台 AGX Xavier 的无人小车上开发的，运行效果如下：(见 `img` 目录下 smallcar.mp4)
+这个程序最初是在一辆搭载了一台 AGX Xavier 的无人小车上开发的，运行效果如下：(见 `img/smallcar.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/smallcar.mp4" controls></video>
 
 小车上搭载了四个 USB 环视鱼眼摄像头，相机传回的画面分辨率为 640x480，图像首先经过畸变校正，然后在射影变换下转换为对地面的鸟瞰图，最后拼接起来经过平滑处理后得到了上面的效果。全部过程在 CPU 中进行处理，整体运行流畅。
 
-后来我把代码重构以后移植到一辆乘用车上 (处理器是同型号的 AGX)，得到了差不多的效果：(见 `img`  目录下 car.mp4)
+后来我把代码重构以后移植到一辆乘用车上 (处理器是同型号的 AGX)，得到了差不多的效果：(见 `img/car.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/car.mp4" controls></video>
 
