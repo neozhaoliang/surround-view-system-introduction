@@ -213,10 +213,11 @@ python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
 
     还有一种偷懒的办法是事先计算一个 tone mapping 函数 (比如逐段线性的，或者 AES tone mapping function)，然后强制把所有像素进行转换，这个方法最省力，但是得到的画面色调会与真实场景有较大差距。似乎有的市面产品就是采用的这种方法。
 
-8. 最后由于有些情况下摄像头不同通道的强度不同，还需要进行一次色彩平衡，见下图：(依次为拼接后原始画面、亮度平衡画面、亮度平衡+色彩平衡画面)
+8. 最后由于有些情况下摄像头不同通道的强度不同，还需要进行一次色彩平衡，见下图:
     
     |  |   |   |
     |:-:|:-:|:-:|
+    |拼接后原始画面| 亮度平衡画面 | 亮度平衡+色彩平衡画面|
     |<img style="margin:0px auto;display:block" width=250 src="./img/example1.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/example2.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/example3.png"/>|
 
     在第二个视频的例子中，画面的颜色偏红，加入色彩平衡后画面恢复了正常。
