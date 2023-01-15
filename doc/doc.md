@@ -190,6 +190,7 @@ python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
 3. 将 `front`, `left` 图像各自位于重叠区域外部的边界检测出来，这一步是通过先调用 `cv2.findContours` 求出最外围的边界，再用 `cv2.approxPolyDP` 获得逼近的多边形轮廓：
   
     |||
+    |:-:|:-:|
     |<img style="margin:0px auto;display:block" width=250 src="./img/polyA.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/polyB.png"/>|
     
     我们把 `front` 相机减去重叠区域后的轮廓记作 `polyA` (左上图中蓝色边界)，`left` 相机减去重叠区域后的轮廓记作 `polyB` (右上图中绿色边界)。
