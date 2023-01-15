@@ -82,7 +82,7 @@ See the illustration below:
 
 <img style="margin:0px auto;display:block" width=400 src="./img/paramsettings.png"/>
 
-Firstly you put four calibration boards at the four corners around the car. There is no special restrictions on how large the board must be, only you can see it clearly in the image.
+Firstly you put four calibration boards at the four corners around the car (the blue squares). There are no special restrictions on how large the board must be, only make sure you can see it clearly in the image.
 
 OF couse, each board must can be seen by the two adjacent cameras.
 
