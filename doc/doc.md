@@ -63,7 +63,7 @@
 | |  |   |   |
 |:-:|:-:|:-:|:-:|
 |front|back|left|right|
-|<img style="margin:0px auto;display:block" width=22% src="./img/images/front.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/back.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/left.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/right.png"/>|
+|<img style="margin:0px auto;display:block" width=200 src="./img/images/front.png"/>|<img style="margin:0px auto;display:block" width=200 src="./img/images/back.png"/>|<img style="margin:0px auto;display:block" width=200 src="./img/images/left.png"/>|<img style="margin:0px auto;display:block" width=200 src="./img/images/right.png"/>|
 
 四个相机的内参文件分别为 `front.yaml`、`back.yaml`、`left.yaml`、`right.yaml`，这些内参文件都存放在项目的 [yaml](https://github.com/neozhaoliang/surround-view-system-introduction/tree/master/yaml) 子目录下。
 
