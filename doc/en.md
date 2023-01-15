@@ -25,7 +25,9 @@ The project is not very complex, but it does involve some careful computations. 
 The hardwares I used in the small car project are:
 
 1. Four USB fisheye cameras，supporting three different modes of resolution: 640x480|800x600|1920x1080. I used 640x480 because it suffices for a car of this size.
-2. AGX Xavier.Indeed you can do all the development on your laptop, it doesn't matter.
+2. AGX Xavier.
+
+Indeed you can do all the development on your laptop, an AGX is not a strict prerequisite to reproduce this project.
 
 The hardwares I used in the EU5 car project are:
 
