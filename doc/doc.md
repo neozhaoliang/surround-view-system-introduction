@@ -60,13 +60,10 @@
 
 以下是视频中四个相机分别拍摄的原始画面，顺序依次为前、后、左、右，并命名为 `front.png`、`back.png`、`left.png`、`right.png` 保存在项目的 `images/` 目录下。
 
-<img style="margin:0px auto;display:block" width=400 src="./img/images/front.png"/>
-
-<img style="margin:0px auto;display:block" width=400 src="./img/images/back.png"/>
-
-<img style="margin:0px auto;display:block" width=400 src="./img/images/left.png"/>
-
-<img style="margin:0px auto;display:block" width=400 src="./img/images/right.png"/>
+| |  |   |   |
+|:-:|:-:|:-:|:-:|
+|front|back|left|right|
+|<img style="margin:0px auto;display:block" width=22% src="./img/images/front.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/back.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/left.png"/>|<img style="margin:0px auto;display:block" width=22% src="./img/images/right.png"/>|
 
 四个相机的内参文件分别为 `front.yaml`、`back.yaml`、`left.yaml`、`right.yaml`，这些内参文件都存放在项目的 [yaml](https://github.com/neozhaoliang/surround-view-system-introduction/tree/master/yaml) 子目录下。
 
