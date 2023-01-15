@@ -1,21 +1,21 @@
-This project is a simple and runnable demo to show how to develop a surrround-view system in Python.
+This project is a simple, runnable and reproducable demo to show how to develop a surrround-view system in Python.
 
-It contains all the key ingredients: camera calibration, image stitching and real-time processing.
+It contains all the key steps: camera calibration, image stitching and real-time processing.
 
 This project was originally developed on a small car with an AGX Xavier and four USB fisheye cameras：(see `img/smallcar.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/smallcar.mp4" controls></video>
 
-The camera resolution was 640x480. Everything is done in Python.
+The camera resolution was set to 640x480, everything is done in Python.
 
-Later I improved the project and migrated it to a [EU5 car](https://en.wikipedia.org/wiki/Beijing_U5), still with Xavier AGX, and got a better result: (see `img/car.mp4`)
+Later I improved the project and migrated it to a [EU5 car](https://en.wikipedia.org/wiki/Beijing_U5), still processing in a Xavier AGX, and got a better result: (see `img/car.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/car.mp4" controls></video>
 
-This car used the four CSI cameras of resolution 960x640. The full birdview image has resolution 1200x1600, the fps is about 17 (and 7) without (with) post-precessing.
+This EU5 car version used the four CSI cameras of resolution 960x640. The full birdview image has resolution 1200x1600, the fps is about 17/7 without/with post-precessing, respectively.
 
 
-> **Remark**：the black area in front of the car is the blind area after projection，it's because the front camera wasn't installed correctly.
+> **Remark**：The black area in front of the car is the blind area after projection，it's because the front camera wasn't installed correctly.
 
 The project is not very complex, but it does involve some careful computations. Now we explain the whole process step by step.
 
