@@ -98,134 +98,138 @@ we let each pixel correspondes to 1cm, so the final birdview image also has reso
     totalHeight = 1000 + 2 * shiftHeight
     ```
 
-+ 车辆所在矩形区域的四角 (图中标注的红色圆点)，这四个角点的坐标分别为 `(xl, yt)`, `(xr, yt)`, `(xl, yb)`, `(xr, yb)` (`l` 表示 left, `r` 表示 right，`t` 表示 top，`b` 表示 bottom)。这个矩形区域相机是看不到的，我们会用一张车辆的图标来覆盖此处。
++ The four corners of the rectangular area where the vehicle is located (marked with red dots in the image) are denoted by the coordinates (xl, yt), (xr, yt), (xl, yb), and (xr, yb), where "l" stands for left, "r" stands for right, "t" stands for top, and "b" stands for bottom. The camera cannot see this rectangular area, and we will use an icon of the vehicle to cover it.
 
-注意这个车辆区域四边的延长线将整个鸟瞰图分为前左 (FL)、前中 (F)、前右 (FR)、左 (L)、右 (R)、后左 (BL)、后中 (B)、后右 (BR) 八个部分，其中 FL (区域 I)、FR (区域 II)、BL (区域 III)、BR (区域 IV) 是相邻相机视野的重合区域，也是我们重点需要进行融合处理的部分。F、R、L、R 四个区域属于每个相机单独的视野，不需要进行融合处理。
+Note that the extension lines of the four sides of the vehicle area divide the entire bird's-eye view into eight parts: front-left (FL), front-center (F), front-right (FR), left (L), right (R), back-left (BL), back-center (B), and back-right (BR). Among them, FL (area I), FR (area II), BL (area III), and BR (area IV) are the overlapping areas of adjacent camera views, and they are the parts that we need to focus on for fusion processing. The areas F, R, L, and R belong to the individual views of each camera and do not require fusion processing.
 
-以上参数存放在 [param_settings.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py) 中。
+The above parameters are saved in: [param_settings.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py) 
 
-设置好参数以后，每个相机的投影区域也就确定了，比如前方相机对应的投影区域如下：
+
+Once the parameters are set, the projection area for each camera is determined. For example, the projection area for the front camera is as follows:
 
 <img style="margin:0px auto;display:block" width=400 src="./img/mask.png"/>
 
-接下来我们需要通过手动选取标志点来获取到地面的投影矩阵。
+Next, we need to manually select the feature points to obtain the projection matrix for the ground plane.
 
 
-# 手动标定获取投影矩阵
+# Manually select feature points for projection matrix
 
 
-首先运行项目中 [run_get_projection_maps.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_get_projection_maps.py) 这个脚本，这个脚本需要你输入如下的参数：
+Firstly you need to run this script, [run_get_projection_maps.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_get_projection_maps.py), with the following parameters：
 
-+ `-camera`: 指定是哪个相机。
-+ `-scale`: 校正后画面的横向和纵向放缩比。
-+ `-shift`: 校正后画面中心的横向和纵向平移距离。
++ `-camera`: specify the camera (left, right, front, rear)
++ `-scale`: The horizontal and vertical scaling ratios of the corrected image after undistortion
++ `-shift`: The horizontal and vertical distances of the corrected image center after undistortion。
 
-为什么需要 `scale` 和 `shift` 这两个参数呢？这是因为默认的 OpenCV 的校正方式是在鱼眼相机校正后的图像中裁剪出一个 OpenCV "认为" 合适的区域并将其返回，这必然会丢失一部分像素，特别地可能会把我们希望选择的特征点给裁掉。幸运的是 [cv2.fisheye.initUndistortRectifyMap](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) 这个函数允许我们再传入一个新的内参矩阵，对校正后但是裁剪前的画面作一次放缩和平移。你可以尝试调整并选择合适的横向、纵向压缩比和图像中心的位置使得地面上的标志点出现在画面中舒服的位置上，以方便进行标定。
 
+The scale and shift parameters are needed because the default OpenCV calibration method for fisheye cameras involves cropping the corrected image to a region that OpenCV "thinks" is appropriate. This inevitably results in the loss of some pixels, especially the feature points that we may want to select.
+
+ Fortunately, the[cv2.fisheye.initUndistortRectifyMap](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) allows us to provide a new intrinsic matrix, which can be used to perform a scaling and translation of the un-cropped corrected image. By adjusting the horizontal and vertical scaling ratios and the position of the image center, we can ensure that the feature points on the ground plane appear in comfortable positions in the image, making it easier to perform calibration.
 运行
 
 ```bash
 python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
 ```
 
-后显示前方相机校正后的画面如下：
+The undistorted image of the front camera：
 
 <img style="margin:0px auto;display:block" width=600 src="./img/original.png"/>
 
-然后依次点击事先确定好的四个标志点 (顺序不能错！)，得到的效果如下：
+Then, click on the four predetermined feature points in order (the order cannot be wrong!), and the result will look like this:
 
 <img style="margin:0px auto;display:block" width=600 src="./img/choose_front.png"/>
 
-注意标志点的设置代码在[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py#L40)。
+The script for setting up the points[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py#L40)。
 
-这四个点是可以自由设置的，但是你需要在程序中手动修改它们在鸟瞰图中的像素坐标。当你在校正图中点击这四个点时，OpenCV 会根据它们在校正图中的像素坐标和在鸟瞰图中的像素坐标的对应关系计算一个射影矩阵。这里用到的原理就是四点对应确定一个射影变换 (四点对应可以给出八个方程，从而求解出射影矩阵的八个未知量。注意射影矩阵的最后一个分量总是固定为 1)。
+These four points can be freely set, but you need to manually modify their pixel coordinates in the bird's-eye view in the program. When you click on these four points in the corrected image, OpenCV will calculate a perspective transformation matrix based on the correspondence between their pixel coordinates in the corrected image and their corresponding coordinates in the bird's-eye view. The principle used here is that a perspective transformation can be uniquely determined by four corresponding points (four points can give eight equations, from which the eight unknowns in the perspective matrix can be solved. Note that the last component of the perspective matrix is always fixed to 1).
 
-如果你不小心点歪了的话可以按 `d` 键删除上一个错误的点。选择好以后点回车，就会显示投影后的效果图:
+If you accidentally clicked the wrong point, you can press the d key to delete the last selected point. After selecting the four points, press Enter, and the program will display the resulting bird's-eye view image:
 
 <img style="margin:0px auto;display:block" width=600 src="./img/front_proj.png"/>
 
-觉得效果可以的话敲回车，就会将投影矩阵写入 `front.yaml` 中，这个矩阵的名字为 `project_matrix`。失败的话就按 `q` 退出再来一次。
+If you are satisfied with the result, press the Enter key to write the projection matrix to the front.yaml file. The name of the matrix is project_matrix. If you are not satisfied, press 'q' to exit and start over.
 
-再比如后面相机的标定如下图所示：
+The four points of the rear camera image：
 
 <img style="margin:0px auto;display:block" width=600 src="./img/choose_back.png"/>
 
-对应的投影图为
+The corresponding undistorted image:
 
 <img style="margin:0px auto;display:block" width=600 src="./img/back_proj.png"/>
 
-对四个相机分别采用此操作，我们就得到了四个相机的鸟瞰图，以及对应的四个投影矩阵。下一步我们的任务是把这四个鸟瞰图拼起来。
+We will stitch the four bird's-eye view images together using the same procedure and get their projection matrix respectively.
 
 
-# 鸟瞰图的拼接与平滑
+# Stitching and smoothing of the birdseye view image
 
 
-如果你前面操作一切正常的话，运行 [run_get_weight_matrices.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_get_weight_matrices.py) 后应该会显示如下的拼接图：
+If everything goes well from the previous section, and after executing this script: [run_get_weight_matrices.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_get_weight_matrices.py), you will notice the stitched birdseye view image：
 
 <img style="margin:0px auto;display:block" width=480 src="./img/result.png"/>
 
-我来逐步介绍它是怎么做到的：
+The logic behind this script is as following：
 
-1. 由于相邻相机之间有重叠的区域，所以这部分的融合是关键。如果直接采取两幅图像加权平均 (权重各自为 1/2) 的方式融合的话你会得到类似下面的结果：
+1. Due to the overlapping areas between adjacent cameras, the fusion of these overlapping parts is crucial for this task. If we directly use a simple weighted averaging approach with weights of 0.5 for each image, we would observe the output like the following image:
 
     <img style="margin:0px auto;display:block" width=480 src="./img/bad.png"/>
-
-    你可以看到由于校正和投影的误差，相邻相机在重合区域的投影结果并不能完全吻合，导致拼接的结果出现乱码和重影。这里的关键在于权重系数应该是随像素变化而变化的，并且是随着像素连续变化。
     
-2. 以左上角区域为例，这个区域是 `front`, `left` 两个相机视野的重叠区域。我们首先将投影图中的重叠部分取出来：
+You can see that due to the errors in calibration and projection, the projected results of adjacent cameras in the overlapping area do not match perfectly, resulting in garbled and ghosting effects in the stitched image. The key point is the weighting coefficients which should vary with the pixels and change continuously with them.
+    
+2. Let's take the upper-left corner as an example, which is the overlapping area of the front and left cameras. We first extract the overlapping area from the projected images:
 
     <img style="margin:0px auto;display:block" width=250 src="./img/overlap.png"/>
 
-    灰度化并二值化：
+    grayscale and thresholding：
     
     <img style="margin:0px auto;display:block" width=250 src="./img/overlap_gray.png"/>
 
-    注意这里面有噪点，可以用形态学操作去掉 (不必特别精细，大致去掉即可)：
+    We can use morphological operations to remove the noise (it doesn't need to be very precise, rough removal is enough):
     
     <img style="margin:0px auto;display:block" width=250 src="./img/mask_dilate.png"/>
     
-    至此我们就得到了重叠区域的一个完整 mask。
+    Then we have the mask for this overlapping area。
 
-3. 将 `front`, `left` 图像各自位于重叠区域外部的边界检测出来，这一步是通过先调用 `cv2.findContours` 求出最外围的边界，再用 `cv2.approxPolyDP` 获得逼近的多边形轮廓：
+3. To obtain the outer boundaries of the front and left images that lie outside the overlapping region, we first use cv2.findContours to find the outermost contour and then use cv2.approxPolyDP to obtain the approximated polygonal contour：
   
     |||
     |:-:|:-:|
     |<img style="margin:0px auto;display:block" width=250 src="./img/polyA.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/polyB.png"/>|
     
-    我们把 `front` 相机减去重叠区域后的轮廓记作 `polyA` (左上图中蓝色边界)，`left` 相机减去重叠区域后的轮廓记作 `polyB` (右上图中绿色边界)。
+    We denote the contour obtained by subtracting the overlapping region from the front camera as polyA (blue boundary in the top left image), and the contour obtained by subtracting the overlapping region from the left camera as polyB (green boundary in the top right image).
 
-4. 对重叠区域中的每个像素，利用 `cv2.pointPolygonTest` 计算其到这两个多边形 `polyA` 和 `polyB` 的距离 $d_A,d_B$，则该像素对应的权值为 $w=d_B^2/(d_A^2+d_B^2)$，即如果这个像素落在 `front` 画面内，则它与 `polyB` 的距离就更远，从而权值更大。
+4. For each pixel in the overlapping area, we can calculate its distance to the two polygons polyA and polyB using cv2.pointPolygonTest, denoting the distances as $d_A$ and $d_B$, respectively. The weight of the pixel is then given by $w=d_B^2/(d_A^2+d_B^2)$. If the pixel falls inside the front image, then its distance to polyB will be greater, giving it a larger weight.
 
-5. 对不在重叠区域内的像素，若其属于 `front` 相机的范围则其权值为 1，否则权值为 0。于是我们得到了一个连续变化的，取值范围在 0~1 之间的矩阵 $G$，其灰度图如下：
+5. For each pixel in the overlapping region, we can use cv2.pointPolygonTest to calculate its distance to the two polygons polyA and polyB. Let $d_A$ and $d_B$ be the distances from the pixel to polyA and polyB, respectively. Then the weight of the pixel is calculated as $w=d_B^2/(d_A^2+d_B^2)$. This means that if the pixel is in the front camera view, it will have a larger weight if it is farther away from polyB. For pixels outside the overlapping region, their weight is 1 if they belong to the front camera's view, and 0 otherwise. Thus, we obtain a continuous matrix $G$ with values ranging between 0 and 1. Here is the grayscale image of $G$:
 
     <img style="margin:0px auto;display:block" width=250 src="./img/weight_for_FL.png" />
     
-    将 $G$ 作为权值可得融合后的图像为 `front * G + (1- G) * left`。
+    By using $G$ as the weight matrix, we can get the fused image: `front * G + (1- G) * left`。
 
-6. 注意由于重叠区域中的像素值是来自两幅图像的加权平均，所以出现在这个区域内的物体会不可避免出现虚影的现象，所以我们需要尽量压缩重叠区域的范围，尽可能只对拼接缝周围的像素计算权值，拼接缝上方的像素尽量使用来自 `front` 的原像素，拼接缝下方的像素尽量使用来自 `back` 的原像素。这一步可以通过控制 $d_B$ 的值得到。
+6. Please note that since the pixel values in the overlapping region are the weighted average of two images, there will inevitably be ghosting artifacts for objects in this region. Therefore, we need to minimize the size of the overlapping region as much as possible and only calculate the weight values for pixels around the stitching seam. We should use original pixels from the front image as much as possible for the pixels above the seam and original pixels from the back image for the pixels below the seam. This step can be achieved by controlling the value of $d_B$.
   
-7. 我们还漏掉了重要的一步：由于不同相机的曝光度不同，导致不同的区域会出现明暗的亮度差，影响美观。我们需要调整每个区域的亮度，使得整个拼接图像的亮度趋于一致。这一步做法不唯一，自由发挥的空间很大。我查阅了一下网上提到的方法，发现它们要么过于复杂，几乎不可能是实时的；要么过于简单，无法达到理想的效果。特别在上面第二个视频的例子中，由于前方相机的视野被车标遮挡导致感光范围不足，导致其与其它三个相机的画面亮度差异很大，调整起来很费劲。
+7. Due to the different exposure levels of different cameras, there will be brightness differences in different areas, which will affect the performance of the final stitched image. We need to adjust the brightness of each area to make the overall brightness of the stitched image tend to be consistent. And there is no unique method. After doing several search online and then realized that the methods mentioned are either too complicated and computationally expensive, or too simple and unable to achieve the ideal performance. In particular, in the example of the second video above, the field of view of the front camera is insufficient due to the obstruction of the car logo, resulting in a large difference in brightness between its image and the other three cameras, which is very difficult to adjust.
   
-    一个基本的想法是这样的：每个相机传回的画面有 `BGR` 三个通道，四个相机传回的画面总共有 12 个通道。我们要计算 12 个系数，将这 12 个系数分别乘到这 12 个通道上，然后再合并起来形成调整后的画面。过亮的通道要调暗一些所以乘的系数小于 1，过暗的通道要调亮一些所以乘的系数大于 1。这些系数可以通过四个画面在四个重合区域内的亮度比值得出，你可以自由设计计算系数的方式，只要满足这个基本原理即可。
+    One basic idea is as follows: Each camera returns an image with three channels in BGR format, and the four cameras together provide a total of 12 channels. We need to calculate 12 coefficients, which are then multiplied with each of the 12 channels, and then combined to form the adjusted image. Channels that are too bright need to be darkened, so the coefficients are less than 1, and channels that are too dark need to be brightened, so the coefficients are greater than 1. These coefficients can be obtained from the brightness ratio of the four images in their overlapping regions. You can design the method for calculating these coefficients as you wish, as long as it satisfies this basic principle.
 
-    我的实现见[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/birdview.py#L210)。感觉就像一段 shader 代码。
+    Here is my implementation[click me ;)](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/birdview.py#L210).
 
-    还有一种偷懒的办法是事先计算一个 tone mapping 函数 (比如逐段线性的，或者 AES tone mapping function)，然后强制把所有像素进行转换，这个方法最省力，但是得到的画面色调会与真实场景有较大差距。似乎有的市面产品就是采用的这种方法。
+    There is also another simple way to adjust the brightness, which is to pre-calculate a tone mapping function (such as piecewise linear or AES tone mapping function) and then force all pixels to be converted using this function. This method is the most simple one, but the color tone in the output frame may differ significantly from the actual environment.
 
-8. 最后由于有些情况下摄像头不同通道的强度不同，还需要进行一次色彩平衡，见下图:
+8. The final step is color balance, which is needed in some cases where the intensity of different channels may vary between cameras. Please refer to the image below:
     
     |  |   |   |
     |:-:|:-:|:-:|
-    |拼接后原始画面| 亮度平衡画面 | 亮度平衡+色彩平衡画面|
+    |Raw frame after stitching| After white balance | After brightness and color balance|
     |<img style="margin:0px auto;display:block" width=250 src="./img/example1.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/example2.png"/>|<img style="margin:0px auto;display:block" width=250 src="./img/example3.png"/>|
 
-    在第二个视频的例子中，画面的颜色偏红，加入色彩平衡后画面恢复了正常。
+    In the example of the second video, the image turns to be more red than normal. After applying color balancing, the image is back to normal.
 
 
-# 具体实现的注意事项
+# Attentions
 
 
-1. 多线程与线程同步。本文的两个例子中四个摄像头都不是硬件触发保证同步的，而且即便是硬件同步的，四个画面的处理线程也未必同步，所以需要有一个线程同步机制。这个项目的实现采用的是比较原始的一种，其核心代码如下：
+1. Multi-threading and thread synchronization. In the two examples in this article, none of the four cameras are hardware-triggered for synchronization, and even if hardware synchronization is used, the processing threads of the four images may not be synchronized, so a thread synchronization mechanism is needed. The implementation of this project uses a relatively primitive method, and its core code is as follows:
+
 ```python
 class MultiBufferManager(object):
 
@@ -247,33 +251,34 @@ class MultiBufferManager(object):
             self.arrived -= 1
         self.mutex.unlock()
 ```
-这里使用了一个 `MultiBufferManager` 对象来管理所有的线程，每个摄像头的线程在每次循环时会调用它的 `sync` 方法，并通过将计数器加 1 的方法来通知这个对象 "报告，我已做完上次的任务，请将我加入休眠池等待下次任务"。一旦计数器达到 4 就会触发唤醒所有线程进入下一轮的任务循环。
+Here, a MultiBufferManager object is used to manage all the threads. Each camera thread calls its sync method at each iteration and notifies the object by incrementing a counter, saying "report, I have completed the previous task, please put me in the sleep pool and wait for the next task." Once the counter reaches 4, all threads are awakened to enter the next round of task iteration.
 
-2. 建立查找表 (lookup table) 以加快运算速度。鱼眼镜头的画面需要经过校正、投影、翻转以后才能用于拼接，这三步涉及频繁的图像内存分配和销毁，非常费时间。在我的测试中抓取线程始终稳定在 30fps 多一点左右，但是每个画面的处理线程只有 20 fps 左右。这一步最好是通过预计算一个查找表来加速。你还记得 `cv2.fisheye.initUndistortRectifyMap` 这个函数吗？它返回的 `mapx, mapy` 就是两个查找表。比如当你指定它返回的矩阵类型为 `cv2.CV_16SC2` 的时候，它返回的 `mapx` 就是一个逐像素的查找表，`mapy` 是一个用于插值平滑的一维数组 (可以扔掉不要)。同理对于 `project_matrix` 也不难获得一个查找表，两个合起来就可以得到一个直接从原始画面到投影画面的查找表 (当然损失了用于插值的信息)。
-    在这个项目中由于采用的是 Python 实现，而 Python 的 `for` 循环效率不高，所以没有采用这种查找表的方式。
+2. Creating a lookup table can speed up the processing. To stitch images from fisheye lenses, the captured images need to go through calibration, projection, and flipping before they can be used for stitching. These three steps involve frequent memory allocation and deallocation, which is time-consuming. In our experiment, the capturing threads were stable at around 30 fps, but each processing thread is only about 20 fps. To speed up this processing, it's best to precompute a lookup table. For example, the cv2.fisheye.initUndistortRectifyMap returns two lookup tables, mapx and mapy, and when you specify the matrix type cv2.CV_16SC2, mapx returned is a per-pixel lookup table, and mapy is a one-dimensional array for interpolation smoothing (which can be discarded). Similarly, a lookup table can also be obtained for the project_matrix, and combining the two will give you a lookup table that directly maps the original image to the projected image (although losing information for interpolation). 
 
-3. 四个权重矩阵可以作为 `RGBA` 四个通道压缩到一张图片中，这样存储和读取都很方便。四个重叠区域对应的 mask 矩阵也是如此：
+In this project, Python was used for implementation; however, the for loops in Python are not very efficient, this lookup table method was not used.
+
+3. The four weight matrices can be compressed into a single image with four channels (RGBA), which is convenient for storage and retrieval. The same applied for the four overlapping mask matrices:
 
     <img style="margin:0px auto;display:block" width=250 src="./img/masks.png"/>
 
     <img style="margin:0px auto;display:block" width=250 src="./img/weights.png"/>
 
 
-# 实车运行
+# On vehicle demo
 
 
-你可以在实车上运行 [run_live_demo.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_live_demo.py) 来验证最终的效果。
+You can run this algo on vehicle to test performance: [run_live_demo.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_live_demo.py)
 
-你需要注意修改相机设备号，以及 OpenCV 打开摄像头的方式。usb 相机可以直接用 `cv2.VideoCapture(i)` (`i` 是 usb 设备号) 的方式打开，csi 相机则需要调用 `gstreamer` 打开，对应的代码在[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/utils.py#L5)和[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/capture_thread.py#L75)。
-
-
-# 附录：项目各脚本一览
+But you need to specify the correct porf of the cameras. For USB camera, you can directly call `cv2.VideoCapture(i)` (`i` indicates the USB port for this camera)，for CSI camera, you need to use `gstreamer` , and here is the script [CSI camera scripts](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/utils.py#L5) and [Capture thred](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/capture_thread.py#L75)。
 
 
-项目中目前的脚本根据执行顺序排列如下:
+# Appendix: scripts in this repo and their description
 
-1. `run_calibrate_camera.py`：用于相机内参标定。
-2. `param_settings.py`：用于设置投影区域的各参数。
-3. `run_get_projection_maps.py`：用于手动标定获取到地面的投影矩阵。
-4. `run_get_weight_matrices.py`：用于计算四个重叠区域对应的权重矩阵以及 mask 矩阵，并显示拼接效果。
-6. `run_live_demo.py`：用于在实车上运行的最终版本。
+
+The script squence of running this repo:
+
+1. `run_calibrate_camera.py`：intrinsic matrix calibration
+2. `param_settings.py`：set up projection matrix and related parameters
+3. `run_get_projection_maps.py`：manually select projection points and area
+4. `run_get_weight_matrices.py`：calculate the weight matrix and mask matrix for the four overlapping regions, and to display the stitching results。
+6. `run_live_demo.py`：on vehicle demo。
