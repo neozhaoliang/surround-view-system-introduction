@@ -303,7 +303,7 @@ class BirdView(BaseThread):
         G2, M2 = utils.get_weight_mask_matrix(BIII(back), LIII(left))
         G3, M3 = utils.get_weight_mask_matrix(BIV(back), RIV(right))
         self.weights = [np.stack((G, G, G), axis=2) for G in (G0, G1, G2, G3)]
-        self.masks = [(M / 255.0).astype(np.int) for M in (M0, M1, M2, M3)]
+        self.masks = [(M / 255.0).astype(int) for M in (M0, M1, M2, M3)]
         return np.stack((G0, G1, G2, G3), axis=2), np.stack((M0, M1, M2, M3), axis=2)
 
     def make_white_balance(self):
