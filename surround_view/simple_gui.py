@@ -116,7 +116,7 @@ class PointSelector(object):
         hull = cv2.convexHull(pixels)
         mask = np.zeros(image_shape[:2], np.int8)
         cv2.fillConvexPoly(mask, hull, 1, lineType=8, shift=0)
-        mask = mask.astype(np.bool)
+        mask = mask.astype(bool)
         return mask
 
     def draw_mask_on_image(self, image, mask):
