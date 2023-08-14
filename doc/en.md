@@ -29,12 +29,12 @@ The hardwares I used in the small car project are:
 
 Indeed you can do all the development on your laptop, an AGX is not a strict prerequisite to reproduce this project.
 
-The hardwares I used in the EU5 car project are:
+The hardware I used in the EU5 car project is:
 
 1. Four CSI cameras of resolution 960x640。I used Sekonix's [SF3326-100-RCCB camera](http://sekolab.com/products/camera/).
-2. Also AGX Xavier as in the samll car.
+2. Also, AGX Xavier as in the small car.
 
-The softwares:
+The software:
 
 1. Ubuntu 16.04/18.04.
 2. Python>=3.
@@ -46,7 +46,7 @@ The softwares:
 
 # Conventions
 
-The four cameras will be named `front`、`back`、`left`、`right`，and with device numbers 0, 1, 2, 3, respectively. Please modify this according to your actual device numbers.
+The four cameras will be named `front`、`back`、`left`、`right`，and with device numbers 0, 1, 2, and 3, respectively. Please modify this according to your actual device numbers.
 
 The camera intrinsic matrix is denoted as `camera_matrix`，this is a 3x3 matrix.
 The distort coefficients are stored in `dist_coeffs`, this is a 1x4 vector.
@@ -68,30 +68,30 @@ Below are the images taken by the four cameras, in the order `front.png`、`back
 
 The parameters of these cameras are stored in the yaml files `front.yaml`、`back.yaml`、`left.yaml`、`right.yaml`, these files can be found in the [yaml](https://github.com/neozhaoliang/surround-view-system-introduction/tree/master/yaml) directory.
 
-You can see their is a black white calibration pattern on the ground, the size of the pattern is `6mx10m`, the size of each black/white square is `40cmx40cm`, the size of each square with a circle in it is `80cmx80cm`.
+You can see there is a black-white calibration pattern on the ground, the size of the pattern is `6mx10m`, the size of each black/white square is `40cmx40cm`, the size of each square with a circle in it is `80cmx80cm`.
 
 
 # Setting projection parameters
 
 
-Now we compute the projection matrix for each camera. This matrix will transform the undistorted image to a birdview of the ground. All the four projections matrices must fit together to make sure the four projected images can be stitched together.
+Now we compute the projection matrix for each camera. This matrix will transform the undistorted image to a birdview of the ground. All four projection matrices must fit together to make sure the four projected images can be stitched together.
 
-This is done by putting calibration patters on the ground, take the camera images, manually choose the feature points, and then compute the matrix.
+This is done by putting calibration patterns on the ground, taking the camera images, manually choosing the feature points, and then computing the matrix.
 
 See the illustration below:
 
 <img style="margin:0px auto;display:block" width=400 src="./img/paramsettings.png"/>
 
-Firstly you put four calibration boards at the four corners around the car (the blue squares). There are no special restrictions on how large the board must be, only make sure you can see it clearly in the image.
+Firstly you put four calibration boards at the four corners around the car (the blue squares). There are no particular restrictions on how large the board must be, only make sure you can see it clearly in the image.
 
-OF couse, each board must can be seen by the two adjacent cameras.
+OF course, each board must be seen by the two adjacent cameras.
 
 Now we need to set a few parameters: (in `cm` units)
 
-+ `innerShiftWidth`, `innerShiftHeight`：distance bewtween the inner edges of the left/right calibration boards and the car，distance bewtween the inner edges of the front/back calibration boards and the car。
++ `innerShiftWidth`, `innerShiftHeight`：distance between the inner edges of the left/right calibration boards and the car， distance bewtween the inner edges of the front/back calibration boards and the car。
 + `shiftWidth`, `shiftHeight`：How far you will want to look at out of the boards. The bigger these values, the larger area the birdview image will cover.
-+ `totalWidth`, `totalHeight`：Size of the area that the birdview image covers. In this project the calibration pattern is of width `600cm` and height `1000cm`, hence the birdview image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity
-we let each pixel correspondes to 1cm, so the final birdview image also has resolution
++ `totalWidth`, `totalHeight`：Size of the area that the birdview image covers. In this project, the calibration pattern is of width `600cm` and height `1000cm`, hence the birdview image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity,
+we let each pixel corresponds to 1cm, so the final birdview image also has resolution
 
     ``` 
     totalWidth = 600 + 2 * shiftWidth
@@ -102,7 +102,7 @@ we let each pixel correspondes to 1cm, so the final birdview image also has reso
 
 Note that the extension lines of the four sides of the vehicle area divide the entire bird's-eye view into eight parts: front-left (FL), front-center (F), front-right (FR), left (L), right (R), back-left (BL), back-center (B), and back-right (BR). Among them, FL (area I), FR (area II), BL (area III), and BR (area IV) are the overlapping areas of adjacent camera views, and they are the parts that we need to focus on for fusion processing. The areas F, R, L, and R belong to the individual views of each camera and do not require fusion processing.
 
-The above parameters are saved in: [param_settings.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py) 
+The above parameters are saved in [param_settings.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py) 
 
 
 Once the parameters are set, the projection area for each camera is determined. For example, the projection area for the front camera is as follows:
@@ -112,7 +112,7 @@ Once the parameters are set, the projection area for each camera is determined. 
 Next, we need to manually select the feature points to obtain the projection matrix for the ground plane.
 
 
-# Manually select feature points for projection matrix
+# Manually select feature points for the projection matrix
 
 
 Firstly you need to run this script, [run_get_projection_maps.py](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/run_get_projection_maps.py), with the following parameters：
@@ -124,8 +124,8 @@ Firstly you need to run this script, [run_get_projection_maps.py](https://github
 
 The scale and shift parameters are needed because the default OpenCV calibration method for fisheye cameras involves cropping the corrected image to a region that OpenCV "thinks" is appropriate. This inevitably results in the loss of some pixels, especially the feature points that we may want to select.
 
- Fortunately, the[cv2.fisheye.initUndistortRectifyMap](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) allows us to provide a new intrinsic matrix, which can be used to perform a scaling and translation of the un-cropped corrected image. By adjusting the horizontal and vertical scaling ratios and the position of the image center, we can ensure that the feature points on the ground plane appear in comfortable positions in the image, making it easier to perform calibration.
-运行
+ Fortunately, the[cv2.fisheye.initUndistortRectifyMap](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) allows us to provide a new intrinsic matrix, which can be used to perform a scaling and translation of the un-cropped corrected image. By adjusting the horizontal and vertical scaling ratios and the position of the image center, we can ensure that the feature points on the ground plane appear in comfortable places in the image, making it easier to perform calibration.
+
 
 ```bash
 python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
@@ -167,7 +167,7 @@ If everything goes well from the previous section, and after executing this scri
 
 <img style="margin:0px auto;display:block" width=480 src="./img/result.png"/>
 
-The logic behind this script is as following：
+The logic behind this script is as follows：
 
 1. Due to the overlapping areas between adjacent cameras, the fusion of these overlapping parts is crucial for this task. If we directly use a simple weighted averaging approach with weights of 0.5 for each image, we would observe the output like the following image:
 
@@ -205,11 +205,11 @@ You can see that due to the errors in calibration and projection, the projected 
     
     By using $G$ as the weight matrix, we can get the fused image: `front * G + (1- G) * left`。
 
-6. Please note that since the pixel values in the overlapping region are the weighted average of two images, there will inevitably be ghosting artifacts for objects in this region. Therefore, we need to minimize the size of the overlapping region as much as possible and only calculate the weight values for pixels around the stitching seam. We should use original pixels from the front image as much as possible for the pixels above the seam and original pixels from the back image for the pixels below the seam. This step can be achieved by controlling the value of $d_B$.
+6. Please note that since the pixel values in the overlapping region are the weighted average of two images, there will inevitably be ghosting artifacts for objects in this region. Therefore, we need to minimize the size of the overlapping region as much as possible and only calculate the weight values for pixels around the stitching seam. We should use the original pixels from the front image as much as possible for the pixels above the seam and the original pixels from the back image for the pixels below the seam. This step can be achieved by controlling the value of $d_B$.
   
-7. Due to the different exposure levels of different cameras, there will be brightness differences in different areas, which will affect the performance of the final stitched image. We need to adjust the brightness of each area to make the overall brightness of the stitched image tend to be consistent. And there is no unique method. After doing several search online and then realized that the methods mentioned are either too complicated and computationally expensive, or too simple and unable to achieve the ideal performance. In particular, in the example of the second video above, the field of view of the front camera is insufficient due to the obstruction of the car logo, resulting in a large difference in brightness between its image and the other three cameras, which is very difficult to adjust.
+7. Due to the different exposure levels of different cameras, there will be brightness differences in different areas, which will affect the performance of the final stitched image. We need to adjust the brightness of each area to make the overall brightness of the stitched image tend to be consistent. And there is no unique method. After doing several searches online and then realized that the methods mentioned are either too complicated and computationally expensive or too simple and unable to achieve the ideal performance. In particular, in the example of the second video above, the field of view of the front camera is insufficient due to the obstruction of the car logo, resulting in a large difference in brightness between its image and the other three cameras, which is very difficult to adjust.
   
-    One basic idea is as follows: Each camera returns an image with three channels in BGR format, and the four cameras together provide a total of 12 channels. We need to calculate 12 coefficients, which are then multiplied with each of the 12 channels, and then combined to form the adjusted image. Channels that are too bright need to be darkened, so the coefficients are less than 1, and channels that are too dark need to be brightened, so the coefficients are greater than 1. These coefficients can be obtained from the brightness ratio of the four images in their overlapping regions. You can design the method for calculating these coefficients as you wish, as long as it satisfies this basic principle.
+    One basic idea is as follows: Each camera returns an image with three channels in BGR format, and the four cameras together provide a total of 12 channels. We need to calculate 12 coefficients, which are then multiplied with each of the 12 channels, and then combined to form the adjusted image. Channels that are too bright need to be darkened, so the coefficients are less than 1, and channels that are too dark need to be brightened, so the coefficients are greater than 1. These coefficients can be obtained from the brightness ratio of the four images in their overlapping regions. You can design the method for calculating these coefficients as you wish as long as it satisfies this basic principle.
 
     Here is my implementation[click me ;)](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/birdview.py#L210).
 
