@@ -88,6 +88,7 @@ class CaptureThread(BaseThread):
                 width, height = self.resolution
                 self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
                 self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
                 # some camera may become closed if the resolution is not supported
                 if not self.cap.isOpened():
                     qDebug("Resolution not supported by camera device: {}".format(self.resolution))
@@ -96,6 +97,7 @@ class CaptureThread(BaseThread):
             else:
                 width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
                 self.resolution = (width, height)
 
         return True
