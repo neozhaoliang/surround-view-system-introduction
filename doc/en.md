@@ -1,30 +1,30 @@
-This project is a simple, runnable and reproducable demo to show how to develop a surrround-view system in Python.
+This project is a simple, runnable, and reproducible demo to show how to develop a surround-view system in Python.
 
-It contains all the key steps: camera calibration, image stitching and real-time processing.
+It contains all the key steps: camera calibration, image stitching, and real-time processing.
 
 This project was originally developed on a small car with an AGX Xavier and four USB fisheye cameras：(see `img/smallcar.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/smallcar.mp4" controls></video>
 
-The camera resolution was set to 640x480, everything is done in Python.
+The camera resolution was set to 640x480, everything was done in Python.
 
 Later I improved the project and migrated it to a [EU5 car](https://en.wikipedia.org/wiki/Beijing_U5), still processing in a Xavier AGX, and got a better result: (see `img/car.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/car.mp4" controls></video>
 
-This EU5 car version used the four CSI cameras of resolution 960x640. The full birdview image has resolution 1200x1600, the fps is about 17/7 without/with post-precessing, respectively.
+This EU5 car version used the four CSI cameras of resolution 960x640. The full review image has a resolution 1200x1600, the fps is about 17/7 without/with post-precessing, respectively.
 
 
-> **Remark**：The black area in front of the car is the blind area after projection，it's because the front camera wasn't installed correctly.
+> **Remark**：The black area in front of the car is the blind area after projection, it's because the front camera wasn't installed correctly.
 
 The project is not very complex, but it does involve some careful computations. Now we explain the whole process step by step.
 
 
 # Hardware and software
 
-The hardwares I used in the small car project are:
+The hardware I used in the small car project is:
 
-1. Four USB fisheye cameras，supporting three different modes of resolution: 640x480|800x600|1920x1080. I used 640x480 because it suffices for a car of this size.
+1. Four USB fisheye cameras, supporting three different modes of resolution: 640x480|800x600|1920x1080. I used 640x480 because it suffices for a car of this size.
 2. AGX Xavier.
 
 Indeed you can do all the development on your laptop, an AGX is not a strict prerequisite to reproduce this project.
@@ -32,7 +32,7 @@ Indeed you can do all the development on your laptop, an AGX is not a strict pre
 The hardware I used in the EU5 car project is:
 
 1. Four CSI cameras of resolution 960x640。I used Sekonix's [SF3326-100-RCCB camera](http://sekolab.com/products/camera/).
-2. Also, AGX Xavier as in the small car.
+2. Also, AGX Xavier is the same as in the small car.
 
 The software:
 
@@ -48,9 +48,9 @@ The software:
 
 The four cameras will be named `front`、`back`、`left`、`right`，and with device numbers 0, 1, 2, and 3, respectively. Please modify this according to your actual device numbers.
 
-The camera intrinsic matrix is denoted as `camera_matrix`，this is a 3x3 matrix.
-The distort coefficients are stored in `dist_coeffs`, this is a 1x4 vector.
-The projection matrix is denoted as `project_matrix`，this is a 3x3 projective matrix.
+The camera intrinsic matrix is denoted as `camera_matrix`， this is a 3x3 matrix.
+The distorted coefficients are stored in `dist_coeffs`, this is a 1x4 vector.
+The projection matrix is denoted as `project_matrix`， this is a 3x3 projective matrix.
 
 
 # Prepare work: camera calibration
@@ -74,7 +74,7 @@ You can see there is a black-white calibration pattern on the ground, the size o
 # Setting projection parameters
 
 
-Now we compute the projection matrix for each camera. This matrix will transform the undistorted image to a birdview of the ground. All four projection matrices must fit together to make sure the four projected images can be stitched together.
+Now we compute the projection matrix for each camera. This matrix will transform the undistorted image into a bird's view of the ground. All four projection matrices must fit together to make sure the four projected images can be stitched together.
 
 This is done by putting calibration patterns on the ground, taking the camera images, manually choosing the feature points, and then computing the matrix.
 
@@ -88,10 +88,10 @@ OF course, each board must be seen by the two adjacent cameras.
 
 Now we need to set a few parameters: (in `cm` units)
 
-+ `innerShiftWidth`, `innerShiftHeight`：distance between the inner edges of the left/right calibration boards and the car， distance bewtween the inner edges of the front/back calibration boards and the car。
-+ `shiftWidth`, `shiftHeight`：How far you will want to look at out of the boards. The bigger these values, the larger area the birdview image will cover.
-+ `totalWidth`, `totalHeight`：Size of the area that the birdview image covers. In this project, the calibration pattern is of width `600cm` and height `1000cm`, hence the birdview image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity,
-we let each pixel corresponds to 1cm, so the final birdview image also has resolution
++ `innerShiftWidth`, `innerShiftHeight`：distance between the inner edges of the left/right calibration boards and the car， the distance between the inner edges of the front/back calibration boards and the car。
++ `shiftWidth`, `shiftHeight`：How far you will want to look at out of the boards. The bigger these values, the larger the area the birdview image will cover.
++ `totalWidth`, `totalHeight`：Size of the area that the birdview image covers. In this project, the calibration pattern is of width `600cm` and height `1000cm`, hence the bird view image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity,
+we let each pixel correspond to 1cm, so the final bird-view image also has a resolution
 
     ``` 
     totalWidth = 600 + 2 * shiftWidth
@@ -124,7 +124,7 @@ Firstly you need to run this script, [run_get_projection_maps.py](https://github
 
 The scale and shift parameters are needed because the default OpenCV calibration method for fisheye cameras involves cropping the corrected image to a region that OpenCV "thinks" is appropriate. This inevitably results in the loss of some pixels, especially the feature points that we may want to select.
 
- Fortunately, the[cv2.fisheye.initUndistortRectifyMap](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) allows us to provide a new intrinsic matrix, which can be used to perform a scaling and translation of the un-cropped corrected image. By adjusting the horizontal and vertical scaling ratios and the position of the image center, we can ensure that the feature points on the ground plane appear in comfortable places in the image, making it easier to perform calibration.
+Fortunately, the function [`cv2.fisheye.initUndistortRectifyMap`](https://docs.opencv.org/master/db/d58/group__calib3d__fisheye.html#ga0d37b45f780b32f63ed19c21aa9fd333) allows us to provide a new intrinsic matrix, which can be used to perform a scaling and translation of the un-cropped corrected image. By adjusting the horizontal and vertical scaling ratios and the position of the image center, we can ensure that the feature points on the ground plane appear in comfortable places in the image, making it easier to perform calibration.
 
 
 ```bash
@@ -139,11 +139,11 @@ Then, click on the four predetermined feature points in order (the order cannot 
 
 <img style="margin:0px auto;display:block" width=600 src="./img/choose_front.png"/>
 
-The script for setting up the points[这里](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py#L40)。
+The script for setting up the points is [here](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/param_settings.py#L40)。
 
-These four points can be freely set, but you need to manually modify their pixel coordinates in the bird's-eye view in the program. When you click on these four points in the corrected image, OpenCV will calculate a perspective transformation matrix based on the correspondence between their pixel coordinates in the corrected image and their corresponding coordinates in the bird's-eye view. The principle used here is that a perspective transformation can be uniquely determined by four corresponding points (four points can give eight equations, from which the eight unknowns in the perspective matrix can be solved. Note that the last component of the perspective matrix is always fixed to 1).
+These four points can be freely set, but you need to manually modify their pixel coordinates in the bird's-eye view in the program. When you click on these four points in the corrected image, OpenCV will calculate a perspective transformation matrix based on the correspondence between their pixel coordinates in the corrected image and their corresponding coordinates in the bird view. The principle used here is that a perspective transformation can be uniquely determined by four corresponding points (four points can give eight equations, from which the eight unknowns in the perspective matrix can be solved. Note that the last component of the perspective matrix is always fixed to 1).
 
-If you accidentally clicked the wrong point, you can press the d key to delete the last selected point. After selecting the four points, press Enter, and the program will display the resulting bird's-eye view image:
+If you accidentally click the wrong point, you can press the d key to delete the last selected point. After selecting the four points, press Enter, and the program will display the resulting bird's-eye view image:
 
 <img style="margin:0px auto;display:block" width=600 src="./img/front_proj.png"/>
 
