@@ -211,7 +211,7 @@ You can see that due to the errors in calibration and projection, the projected 
   
     One basic idea is as follows: Each camera returns an image with three channels in BGR format, and the four cameras together provide a total of 12 channels. We need to calculate 12 coefficients, which are then multiplied with each of the 12 channels, and then combined to form the adjusted image. Channels that are too bright need to be darkened, so the coefficients are less than 1, and channels that are too dark need to be brightened, so the coefficients are greater than 1. These coefficients can be obtained from the brightness ratio of the four images in their overlapping regions. You can design the method for calculating these coefficients as you wish as long as it satisfies this basic principle.
 
-    Here is my implementation[click me ;)](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/birdview.py#L210).
+    Here is my [implementation](https://github.com/neozhaoliang/surround-view-system-introduction/blob/master/surround_view/birdview.py#L210).
 
     There is also another simple way to adjust the brightness, which is to pre-calculate a tone mapping function (such as piecewise linear or AES tone mapping function) and then force all pixels to be converted using this function. This method is the most simple one, but the color tone in the output frame may differ significantly from the actual environment.
 
