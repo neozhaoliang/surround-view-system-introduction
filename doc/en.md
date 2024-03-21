@@ -159,7 +159,8 @@ The corresponding undistorted image:
 
 We will stitch the four bird's-eye view images together using the same procedure and get their projection matrix respectively.
 
-> **Important**: You should make sure the four selected points cover a as large as possible region in the image. Otherwise, the four parts may not stitch well. The reason is, there are still some distortions in the undistorted image, even it's called the undistorted one, due to alll kinds of errors in the process of undistortion. And the distortion is more visible at the parts far away from the image center. So we need OpenCV to find a "globally" optimized projective matrix using the information from a larger portion of the image, not merely a local and small region.
+> **Important**: It is crucial to select four points that cover as largest possible area in the image to ensure seamless stitching. Failure to do so may result in poor stitching. Despite being called as undistorted, the image may still contain distortions due to various errors in the undistortion process, particularly noticeable towards the image periphery. Therefore, we should ask OpenCV to find a globally optimized projective matrix by leveraging information from a broader image area, rather than relying solely on local and limited regions.
+
 
 # Stitching and smoothing of the birdseye view image
 
