@@ -168,7 +168,7 @@ python run_get_projection_maps.py -camera front -scale 0.7 0.8 -shift -150 -100
 
 1. 由于相邻相机之间有重叠的区域，所以这部分的融合是关键。如果直接采取两幅图像加权平均 (权重各自为 1/2) 的方式融合的话你会得到类似下面的结果：
 
-    <img style="margin:0px auto;display:block" width=480 src="./img/bad.png"/>
+   <img style="margin:0px auto;display:block" width=480 src="./img/bad.png"/>
 
     你可以看到由于校正和投影的误差，相邻相机在重合区域的投影结果并不能完全吻合，导致拼接的结果出现乱码和重影。这里的关键在于权重系数应该是随像素变化而变化的，并且是随着像素连续变化。
     
