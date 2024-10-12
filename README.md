@@ -6,4 +6,4 @@ This is a simple implementation of a surround view system, including calibration
 
 # Use cases
 
-![1142119521](https://github.com/user-attachments/assets/97f1cebc-da38-46b6-9eb1-62af4168c79f|400)
+![1142119521](https://github.com/user-attachments/assets/97f1cebc-da38-46b6-9eb1-62af4168c79f)
