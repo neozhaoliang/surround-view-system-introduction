@@ -2,7 +2,7 @@ This project is a simple, runnable, and reproducible demo to show how to develop
 
 It contains all the key steps: camera calibration, image stitching, and real-time processing.
 
-This project was originally developed on a small car with an AGX Xavier and four USB fisheye cameras：(see `img/smallcar.mp4`)
+This project was originally developed on a small car with an AGX Xavier and four USB fisheye cameras: (see `img/smallcar.mp4`)
 
 <video style="margin:0px auto;display:block" width=400 src="./img/smallcar.mp4" controls></video>
 
