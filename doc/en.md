@@ -84,14 +84,13 @@ See the illustration below:
 
 Firstly you put four calibration boards at the four corners around the car (the blue squares). There are no particular restrictions on how large the board must be, only make sure you can see it clearly in the image.
 
-OF course, each board must be seen by the two adjacent cameras.
+Of course, each board must be seen by the two adjacent cameras.
 
 Now we need to set a few parameters: (in `cm` units)
 
-+ `innerShiftWidth`, `innerShiftHeight`：distance between the inner edges of the left/right calibration boards and the car， the distance between the inner edges of the front/back calibration boards and the car。
-+ `shiftWidth`, `shiftHeight`：How far you will want to look at out of the boards. The bigger these values, the larger the area the birdview image will cover.
-+ `totalWidth`, `totalHeight`：Size of the area that the birdview image covers. In this project, the calibration pattern is of width `600cm` and height `1000cm`, hence the bird view image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity,
-we let each pixel correspond to 1cm, so the final bird-view image also has a resolution
++ `innerShiftWidth`, `innerShiftHeight`: distance between the inner edges of the left/right calibration boards and the car; the distance between the inner edges of the front/back calibration boards and the car。
++ `shiftWidth`, `shiftHeight`: How far you will want to look at out of the boards. The bigger these values, the larger the area the birdview image will cover.
++ `totalWidth`, `totalHeight`: Size of the area that the birdview image covers. In this project, the calibration pattern is of width `600cm` and height `1000cm`, hence the bird view image will cover an area of size `(600 + 2 * shiftWidth, 1000 + 2 * shiftHeight)`. For simplicity, we let each pixel correspond to 1cm, so the final bird-view image also has a resolution
 
     ``` 
     totalWidth = 600 + 2 * shiftWidth
