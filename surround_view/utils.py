@@ -111,8 +111,7 @@ def get_weight_mask_matrix(imA, imB, dist_threshold=5):
     polyB = get_outmost_polygon_boundary(imB_diff)
 
     for y, x in zip(*indices):
-
-        #convert this x,y int an INT tuple
+        # opencv requires a tuple of ints
         xy_tuple = tuple([int(x), int(y)])
         distToB = cv2.pointPolygonTest(polyB, xy_tuple, True)
 
