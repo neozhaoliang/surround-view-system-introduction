@@ -31,7 +31,7 @@ def convert_binary_to_bool(mask):
     Convert a binary image (only one channel and pixels are 0 or 255) to
     a bool one (all pixels are 0 or 1).
     """
-    return (mask.astype(np.float) / 255.0).astype(int)
+    return (mask.astype(np.float64) / 255.0).astype(int)
 
 
 def adjust_luminance(gray, factor):
