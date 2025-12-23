@@ -143,13 +143,13 @@ class BirdView(BaseThread):
         self.frames = images
 
     def load_weights_and_masks(self, weights_image, masks_image):
-        GMat = np.asarray(Image.open(weights_image).convert("RGBA"), dtype=np.float) / 255.0
+        GMat = np.asarray(Image.open(weights_image).convert("RGBA"), dtype=np.float64) / 255.0
         self.weights = [np.stack((GMat[:, :, k],
                                   GMat[:, :, k],
                                   GMat[:, :, k]), axis=2)
                         for k in range(4)]
 
-        Mmat = np.asarray(Image.open(masks_image).convert("RGBA"), dtype=np.float)
+        Mmat = np.asarray(Image.open(masks_image).convert("RGBA"), dtype=np.float64)
         Mmat = utils.convert_binary_to_bool(Mmat)
         self.masks = [Mmat[:, :, k] for k in range(4)]
 
