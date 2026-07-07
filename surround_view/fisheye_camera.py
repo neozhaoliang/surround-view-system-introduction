@@ -33,13 +33,13 @@ class FisheyeCameraModel(object):
         self.dist_coeffs = fs.getNode("dist_coeffs").mat()
         self.resolution = fs.getNode("resolution").mat().flatten()
 
-        scale_xy = fs.getNode("scale_xy").mat()
-        if scale_xy is not None:
-            self.scale_xy = scale_xy
+        scale_xy = fs.getNode("scale_xy")
+        if not scale_xy.empty():
+            self.scale_xy = scale_xy.mat().flatten()
 
-        shift_xy = fs.getNode("shift_xy").mat()
-        if shift_xy is not None:
-            self.shift_xy = shift_xy
+        shift_xy = fs.getNode("shift_xy")
+        if not shift_xy.empty():
+            self.shift_xy = shift_xy.mat().flatten()
 
         project_matrix = fs.getNode("project_matrix").mat()
         if project_matrix is not None:

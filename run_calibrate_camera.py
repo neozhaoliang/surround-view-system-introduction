@@ -170,6 +170,8 @@ def main():
                 (W, H),
                 None,
                 None)
+            K = mtx
+            D = dist
 
         if ret:
             fs = cv2.FileStorage(args.output, cv2.FILE_STORAGE_WRITE)
