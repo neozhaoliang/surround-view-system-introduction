@@ -45,15 +45,16 @@ class CameraProcessingThread(BaseThread):
             self.processing_time = self.clock.elapsed()
             self.clock.start()
 
-            self.processing_mutex.lock()
-            raw_frame = self.capture_buffer_manager.get_device(self.device_id).get()
-            und_frame = self.camera_model.undistort(raw_frame.image)
-            pro_frame = self.camera_model.project(und_frame)
-            flip_frame = self.camera_model.flip(pro_frame)
-            self.processing_mutex.unlock()
+            raw_frame = self.capture_buffer_manager.get_device(self.device_id).get(timeout_ms=100)
+            if raw_frame is not None:
+                self.processing_mutex.lock()
+                und_frame = self.camera_model.undistort(raw_frame.image)
+                pro_frame = self.camera_model.project(und_frame)
+                flip_frame = self.camera_model.flip(pro_frame)
+                self.processing_mutex.unlock()
+                self.proc_buffer_manager.set_frame_for_device(self.device_id, flip_frame)
 
             self.proc_buffer_manager.sync(self.device_id)
-            self.proc_buffer_manager.set_frame_for_device(self.device_id, flip_frame)
 
             # update statistics
             self.update_fps(self.processing_time)
