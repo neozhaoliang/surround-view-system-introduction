@@ -41,7 +41,7 @@ def adjust_luminance(gray, factor):
     return np.minimum((gray * factor), 255).astype(np.uint8)
 
 
-def get_mean_statistisc(gray, mask):
+def get_mean_statistics(gray, mask):
     """
     Get the total values of a gray image in a region defined by a mask matrix.
     The mask matrix must have values either 0 or 1.
@@ -50,7 +50,7 @@ def get_mean_statistisc(gray, mask):
 
 
 def mean_luminance_ratio(grayA, grayB, mask):
-    return get_mean_statistisc(grayA, mask) / get_mean_statistisc(grayB, mask)
+    return get_mean_statistics(grayA, mask) / get_mean_statistics(grayB, mask)
 
 
 def get_mask(img):

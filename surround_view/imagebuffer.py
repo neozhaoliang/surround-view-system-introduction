@@ -31,10 +31,15 @@ class Buffer(object):
 
         self.clear_buffer_add.release()
 
-    def get(self):
+    def get(self, timeout_ms=0):
         # acquire semaphores
         self.clear_buffer_get.acquire()
-        self.used_slots.acquire()
+        if timeout_ms > 0:
+            if not self.used_slots.tryAcquire(1, timeout_ms):
+                self.clear_buffer_get.release()
+                return None
+        else:
+            self.used_slots.acquire()
         self.queue_mutex.lock()
         data = self.queue.get()
         self.queue_mutex.unlock()

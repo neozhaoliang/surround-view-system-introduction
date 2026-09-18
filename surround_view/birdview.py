@@ -20,27 +20,36 @@ class ProjectedImageBuffer(object):
         self.drop_if_full = drop_if_full
         self.buffer = Buffer(buffer_size)
         self.sync_devices = set()
+        self.device_to_name = dict()
         self.wc = QWaitCondition()
         self.mutex = QMutex()
         self.arrived = 0
-        self.current_frames = dict()
+        self.current_frames = {
+            name: np.zeros(shape[::-1] + (3,), np.uint8)
+            for name, shape in settings.project_shapes.items()
+        }
 
     def bind_thread(self, thread):
         with QMutexLocker(self.mutex):
             self.sync_devices.add(thread.device_id)
-
-        name = thread.camera_model.camera_name
-        shape = settings.project_shapes[name]
-        self.current_frames[thread.device_id] = np.zeros(shape[::-1] + (3,), np.uint8)
+            self.device_to_name[thread.device_id] = thread.camera_model.camera_name
         thread.proc_buffer_manager = self
 
-    def get(self):
-        return self.buffer.get()
+    def get(self, timeout_ms=0):
+        return self.buffer.get(timeout_ms)
 
     def set_frame_for_device(self, device_id, frame):
-        if device_id not in self.sync_devices:
+        if device_id not in self.device_to_name:
             raise ValueError("Device not held by the buffer: {}".format(device_id))
-        self.current_frames[device_id] = frame
+        with QMutexLocker(self.mutex):
+            self.current_frames[self.device_to_name[device_id]] = frame
+
+    def remove_device(self, device_id):
+        with QMutexLocker(self.mutex):
+            if device_id in self.sync_devices:
+                self.sync_devices.remove(device_id)
+            self.device_to_name.pop(device_id, None)
+            self.wc.wakeAll()
 
     def sync(self, device_id):
         # only perform sync if enabled for specified device/stream
@@ -50,7 +59,7 @@ class ProjectedImageBuffer(object):
             self.arrived += 1
             # we are the last to arrive: wake all waiting threads
             if self.arrived == len(self.sync_devices):
-                self.buffer.add(self.current_frames, self.drop_if_full)
+                self.buffer.add(dict(self.current_frames), self.drop_if_full)
                 self.wc.wakeAll()
             # still waiting for other streams to arrive: wait
             else:
@@ -136,8 +145,8 @@ class BirdView(BaseThread):
         self.car_image = settings.car_image
         self.frames = None
 
-    def get(self):
-        return self.buffer.get()
+    def get(self, timeout_ms=0):
+        return self.buffer.get(timeout_ms)
 
     def update_frames(self, images):
         self.frames = images
@@ -194,7 +203,10 @@ class BirdView(BaseThread):
         return self.image[yt:yb, xl:xr]
 
     def stitch_all_parts(self):
-        front, back, left, right = self.frames
+        front = self.frames["front"]
+        back = self.frames["back"]
+        left = self.frames["left"]
+        right = self.frames["right"]
         np.copyto(self.F, FM(front))
         np.copyto(self.B, BM(back))
         np.copyto(self.L, LM(left))
@@ -215,7 +227,10 @@ class BirdView(BaseThread):
             else:
                 return x * np.exp((1 - x) * 0.8)
 
-        front, back, left, right = self.frames
+        front = self.frames["front"]
+        back = self.frames["back"]
+        left = self.frames["left"]
+        right = self.frames["right"]
         m1, m2, m3, m4 = self.masks
         Fb, Fg, Fr = cv2.split(front)
         Bb, Bg, Br = cv2.split(back)
@@ -290,10 +305,12 @@ class BirdView(BaseThread):
         Rg = utils.adjust_luminance(Rg, w2)
         Rr = utils.adjust_luminance(Rr, w3)
 
-        self.frames = [cv2.merge((Fb, Fg, Fr)),
-                       cv2.merge((Bb, Bg, Br)),
-                       cv2.merge((Lb, Lg, Lr)),
-                       cv2.merge((Rb, Rg, Rr))]
+        self.frames = {
+            "front": cv2.merge((Fb, Fg, Fr)),
+            "back": cv2.merge((Bb, Bg, Br)),
+            "left": cv2.merge((Lb, Lg, Lr)),
+            "right": cv2.merge((Rb, Rg, Rr))
+        }
         return self
 
     def get_weights_and_masks(self, images):
@@ -325,7 +342,12 @@ class BirdView(BaseThread):
 
             self.processing_mutex.lock()
 
-            self.update_frames(self.proc_buffer_manager.get().values())
+            frames_dict = self.proc_buffer_manager.get(timeout_ms=100)
+            if frames_dict is None:
+                self.processing_mutex.unlock()
+                continue
+
+            self.update_frames(frames_dict)
             self.make_luminance_balance().stitch_all_parts()
             self.make_white_balance()
             self.copy_car_image()
