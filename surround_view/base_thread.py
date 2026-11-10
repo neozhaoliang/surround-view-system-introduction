@@ -34,6 +34,10 @@ class BaseThread(QThread):
         with QMutexLocker(self.stop_mutex):
             self.stopped = True
 
+    def should_stop(self):
+        with QMutexLocker(self.stop_mutex):
+            return self.stopped
+
     def update_fps(self, dt):
         # add instantaneous fps value to queue
         if dt > 0:

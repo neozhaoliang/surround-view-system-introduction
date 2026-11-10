@@ -72,7 +72,15 @@ class FisheyeCameraModel(object):
         self.update_undistort_maps()
         return self
 
+    def align_to_calibration_resolution(self, image):
+        width, height = (int(value) for value in self.resolution)
+        if image.shape[1] == width and image.shape[0] == height:
+            return image
+        interpolation = cv2.INTER_AREA if image.shape[1] > width or image.shape[0] > height else cv2.INTER_LINEAR
+        return cv2.resize(image, (width, height), interpolation=interpolation)
+
     def undistort(self, image):
+        image = self.align_to_calibration_resolution(image)
         result = cv2.remap(image, *self.undistort_maps, interpolation=cv2.INTER_LINEAR,
                            borderMode=cv2.BORDER_CONSTANT)
         return result

@@ -138,7 +138,7 @@ class MultiBufferManager(object):
                 self.wc.wakeAll()
             # still waiting for other streams to arrive: wait
             else:
-                self.wc.wait(self.mutex)
+                self.wc.wait(self.mutex, 100)
             # decrement arrived count
             self.arrived -= 1
         self.mutex.unlock()

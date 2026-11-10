@@ -35,17 +35,15 @@ class CameraProcessingThread(BaseThread):
             raise ValueError("This thread has not been binded to any processing thread yet")
 
         while True:
-            self.stop_mutex.lock()
-            if self.stopped:
-                self.stopped = False
-                self.stop_mutex.unlock()
+            if self.should_stop():
                 break
-            self.stop_mutex.unlock()
 
             self.processing_time = self.clock.elapsed()
             self.clock.start()
 
             raw_frame = self.capture_buffer_manager.get_device(self.device_id).get(timeout_ms=100)
+            if self.should_stop():
+                break
             if raw_frame is not None:
                 self.processing_mutex.lock()
                 und_frame = self.camera_model.undistort(raw_frame.image)
@@ -55,6 +53,8 @@ class CameraProcessingThread(BaseThread):
                 self.proc_buffer_manager.set_frame_for_device(self.device_id, flip_frame)
 
             self.proc_buffer_manager.sync(self.device_id)
+            if self.should_stop():
+                break
 
             # update statistics
             self.update_fps(self.processing_time)

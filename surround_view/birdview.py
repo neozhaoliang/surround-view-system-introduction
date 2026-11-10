@@ -25,7 +25,10 @@ class ProjectedImageBuffer(object):
         self.mutex = QMutex()
         self.arrived = 0
         self.current_frames = {
-            name: np.zeros(shape[::-1] + (3,), np.uint8)
+            name: np.zeros(
+                (shape[0], shape[1], 3) if name in ("left", "right") else (shape[1], shape[0], 3),
+                np.uint8,
+            )
             for name, shape in settings.project_shapes.items()
         }
 
@@ -63,7 +66,7 @@ class ProjectedImageBuffer(object):
                 self.wc.wakeAll()
             # still waiting for other streams to arrive: wait
             else:
-                self.wc.wait(self.mutex)
+                self.wc.wait(self.mutex, 100)
             # decrement arrived count
             self.arrived -= 1
         self.mutex.unlock()
@@ -331,12 +334,8 @@ class BirdView(BaseThread):
             raise ValueError("This thread requires a buffer of projected images to run")
 
         while True:
-            self.stop_mutex.lock()
-            if self.stopped:
-                self.stopped = False
-                self.stop_mutex.unlock()
+            if self.should_stop():
                 break
-            self.stop_mutex.unlock()
             self.processing_time = self.clock.elapsed()
             self.clock.start()
 

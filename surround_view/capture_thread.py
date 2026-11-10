@@ -41,12 +41,8 @@ class CaptureThread(BaseThread):
             raise ValueError("This thread has not been binded to any buffer manager yet")
 
         while True:
-            self.stop_mutex.lock()
-            if self.stopped:
-                self.stopped = False
-                self.stop_mutex.unlock()
+            if self.should_stop():
                 break
-            self.stop_mutex.unlock()
 
             # save capture time
             self.processing_time = self.clock.elapsed()
@@ -55,12 +51,16 @@ class CaptureThread(BaseThread):
 
             # synchronize with other streams (if enabled for this stream)
             self.buffer_manager.sync(self.device_id)
+            if self.should_stop():
+                break
 
             if not self.cap.grab():
                 continue
 
             # retrieve frame and add it to buffer
             _, frame = self.cap.retrieve()
+            if frame is None or self.should_stop():
+                continue
             img_frame = ImageFrame(self.clock.msecsSinceStartOfDay(), frame)
             self.buffer_manager.get_device(self.device_id).add(img_frame, self.drop_if_full)
 
@@ -77,7 +77,7 @@ class CaptureThread(BaseThread):
             options = gstreamer_pipeline(cam_id=self.device_id, flip_method=self.flip_method)
             self.cap.open(options, self.api_preference)
         else:
-            self.cap.open(self.device_id)
+            self.cap.open(self.device_id, self.api_preference)
         # return false if failed to open camera
         if not self.cap.isOpened():
             qDebug("Cannot open camera {}".format(self.device_id))

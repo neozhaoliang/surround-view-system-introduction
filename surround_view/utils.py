@@ -50,7 +50,16 @@ def get_mean_statistics(gray, mask):
 
 
 def mean_luminance_ratio(grayA, grayB, mask):
-    return get_mean_statistics(grayA, mask) / get_mean_statistics(grayB, mask)
+    if grayA.shape != grayB.shape or grayA.shape != mask.shape:
+        raise ValueError(
+            "Luminance inputs and mask must have the same shape: "
+            "{} vs {} vs {}".format(grayA.shape, grayB.shape, mask.shape)
+        )
+    value_a = float(get_mean_statistics(grayA, mask))
+    value_b = float(get_mean_statistics(grayB, mask))
+    if value_a <= 0 or value_b <= 0 or not np.isfinite(value_a / value_b):
+        return 1.0
+    return value_a / value_b
 
 
 def get_mask(img):
